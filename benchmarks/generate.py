@@ -806,6 +806,18 @@ Run() {
 
     do {
         for (new i; i != BENCH_BATCH; ++i) {
+            $typed;
+        }
+    } while (Bench_Next(BENCH_BATCH));
+
+    Bench_End("command", "typed by a player, the last of $commands commands");
+    Bench_Check("typed commands ran", gHits, gBenchOps);
+
+    gHits = 0;
+    Bench_Begin();
+
+    do {
+        for (new i; i != BENCH_BATCH; ++i) {
             $run(gPlainBot, denied$runargs);
         }
     } while (Bench_Next(BENCH_BATCH));
@@ -903,7 +915,7 @@ def commands():
 
     text = head('SSI', '#define MAX_COMMANDS (Command:1024)\n#define MAX_COMMAND_NAMES (2048)\n\n#include <SSI\\iterator>\n#include <SSI\\command>\n#include <SSI\\group>\n#include <SSI\\hooks>')
     text += GROUPS
-    text += COMMAND_RUN.substitute(values, run='Command_Run', runargs='', join='Group_AddPlayer', on='', leave='Group_RemovePlayer', off='', has='Group_HasPlayer')
+    text += COMMAND_RUN.substitute(values, typed='CallLocalFunction("OnPlayerCommandText", "is", gPlainBot, last)', run='Command_Run', runargs='', join='Group_AddPlayer', on='', leave='Group_RemovePlayer', off='', has='Group_HasPlayer')
     text += ''.join('\nCMD:c%d(playerid, params[]) {\n    ++gHits;\n\n    return 1;\n}\n' % i for i in range(count))
     text += '''
 Setup() {
@@ -933,7 +945,7 @@ Setup() {
 
     text = head('YSI', '#define _FOREACH_NO_TEST\n#define MAX_COMMANDS (1024)\n\n#include <YSI_Visual\\y_commands>\n#include <YSI_Players\\y_groups>\n#include <YSI_Coding\\y_hooks>')
     text += GROUPS
-    text += COMMAND_RUN.substitute(values, run='Command_ReProcess', runargs=', false, false', join='Group_SetPlayer', on=', true', leave='Group_SetPlayer', off=', false', has='Group_GetPlayer')
+    text += COMMAND_RUN.substitute(values, typed='CallLocalFunction("OnPlayerCommandText", "is", gPlainBot, last)', run='Command_ReProcess', runargs=', false, false', join='Group_SetPlayer', on=', true', leave='Group_SetPlayer', off=', false', has='Group_GetPlayer')
     text += ''.join('\nYCMD:c%d(playerid, params[], help) {\n    ++gHits;\n\n    return 1;\n}\n' % i for i in range(count))
     allow = []
     for i in range(count):
@@ -968,6 +980,110 @@ Setup() {
 ''' % '\n'.join(allow)
     write('command_ysi', text + MAIN + START)
 
+PAWNCMD_RUN = Template('''
+new
+    gHits,
+    gRank[MAX_PLAYERS],
+    gAdminBot = INVALID_PLAYER_ID,
+    gPlainBot = INVALID_PLAYER_ID
+;
+
+First() {
+    gAdminBot = NPC_Create("AdminBot");
+    gPlainBot = NPC_Create("PlainBot");
+    gRank[gAdminBot] = 3;
+}
+
+public OnPlayerCommandReceived(playerid, cmd[], params[], flags) {
+    return flags <= gRank[playerid];
+}
+
+public OnPlayerCommandPerformed(playerid, cmd[], params[], result, flags) {
+    return 1;
+}
+
+Run() {
+    new
+        inherited[] = "/c5 hello",
+        last[] = "/c999 hello",
+        denied[] = "/c15 hello",
+        unknown[] = "/nothing hello"
+    ;
+
+    gHits = 0;
+    Bench_Begin();
+
+    do {
+        for (new i; i != BENCH_BATCH; ++i) {
+            PC_EmulateCommand(gAdminBot, inherited);
+        }
+    } while (Bench_Next(BENCH_BATCH));
+
+    Bench_End("command", "allowed through 2 parent groups, $commands commands");
+    Bench_Check("allowed commands ran", gHits, gBenchOps);
+
+    gHits = 0;
+    Bench_Begin();
+
+    do {
+        for (new i; i != BENCH_BATCH; ++i) {
+            PC_EmulateCommand(gPlainBot, last);
+        }
+    } while (Bench_Next(BENCH_BATCH));
+
+    Bench_End("command", "free, the last of $commands commands");
+    Bench_Check("free commands ran", gHits, gBenchOps);
+
+    gHits = 0;
+    Bench_Begin();
+
+    do {
+        for (new i; i != BENCH_BATCH; ++i) {
+            $typed;
+        }
+    } while (Bench_Next(BENCH_BATCH));
+
+    Bench_End("command", "typed by a player, the last of $commands commands");
+    Bench_Check("typed commands ran", gHits, gBenchOps);
+
+    gHits = 0;
+    Bench_Begin();
+
+    do {
+        for (new i; i != BENCH_BATCH; ++i) {
+            PC_EmulateCommand(gPlainBot, denied);
+        }
+    } while (Bench_Next(BENCH_BATCH));
+
+    Bench_End("command", "denied, $commands commands");
+    Bench_Check("denied commands ran", gHits, 0);
+
+    Bench_Begin();
+
+    do {
+        for (new i; i != BENCH_BATCH; ++i) {
+            PC_EmulateCommand(gPlainBot, unknown);
+        }
+    } while (Bench_Next(BENCH_BATCH));
+
+    Bench_End("command", "unknown, $commands commands");
+}
+
+Setup() {
+}
+''')
+
+
+def pawncmd():
+    count = 1000
+    text = head('Pawn.CMD', '#include <Pawn.CMD>')
+    text += PAWNCMD_RUN.substitute(commands=count, typed='PC_EmulateCommand(gPlainBot, last)')
+    for i in range(count):
+        text += '\ncmd:c%d(playerid, params[]) {\n    ++gHits;\n\n    return 1;\n}\n' % i
+        if owner(i):
+            text += '\nflags:c%d(%d)\n' % (i, {'Helper': 1, 'Moderator': 2, 'Admin': 3}[owner(i)])
+    write('command_pawncmd', text + MAIN + START)
+
 hooks()
 collection()
 dictionary()
@@ -975,4 +1091,5 @@ bits()
 va()
 inline()
 commands()
+pawncmd()
 print('ok')

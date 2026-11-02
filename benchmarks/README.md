@@ -1,16 +1,16 @@
 # Benchmarks
 
-The scripts behind the [Performance](https://github.com/imshooter/SSI/wiki/Performance) page of the wiki. Each one measures one library on one side, SSI, YSI or PawnPlus, and is named after them: `collection_ysi_100000.pwn` measures y_iterate with 100000 ids.
+The scripts behind the [Performance](https://github.com/imshooter/SSI/wiki/Performance) page of the wiki. Each one measures one library on one side, SSI, YSI, PawnPlus or Pawn.CMD, and is named after them: `collection_ysi_100000.pwn` measures y_iterate with 100000 ids.
 
 ## Running
 
-Compile a script with the open.mp includes, SSI, YSI and PawnPlus in the include path, and the same options as the results:
+Compile a script with the open.mp includes, SSI, YSI, PawnPlus and Pawn.CMD in the include path, and the same options as the results:
 
 ```bash
 pawncc collection_ssi_4096.pwn -i<includes> -d0 -;+ -(+
 ```
 
-Run it as the game mode of a server that loads the PawnPlus plugin, and allows three bots for `command_ssi` and `command_ysi`. It prints one line for each operation and round, then closes the server:
+Run it as the game mode of a server that loads the PawnPlus plugin, the Pawn.CMD component for `command_pawncmd`, and allows three bots for the command scripts. It prints one line for each operation and round, then closes the server:
 
 ```
 [bench] SSI|collection|contains, 4096 ids|4.70

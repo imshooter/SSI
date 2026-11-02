@@ -69,6 +69,18 @@ Run() {
 
     do {
         for (new i; i != BENCH_BATCH; ++i) {
+            CallLocalFunction("OnPlayerCommandText", "is", gPlainBot, last);
+        }
+    } while (Bench_Next(BENCH_BATCH));
+
+    Bench_End("command", "typed by a player, the last of 1000 commands");
+    Bench_Check("typed commands ran", gHits, gBenchOps);
+
+    gHits = 0;
+    Bench_Begin();
+
+    do {
+        for (new i; i != BENCH_BATCH; ++i) {
             Command_ReProcess(gPlainBot, denied, false, false);
         }
     } while (Bench_Next(BENCH_BATCH));
