@@ -1,0 +1,8 @@
+{
+	"user": "imshooter",
+	"repo": "SSI",
+	"dependencies": [
+		"openmultiplayer/omp-stdlib",
+		"IllidanS4/PawnPlus"
+	]
+}
