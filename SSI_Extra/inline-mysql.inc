@@ -19,11 +19,15 @@
  *                 @return;
  *             }
  *
- *             if (MySQL_GetRowCount() == 0) {
+ *             new
+ *                 days
+ *             ;
+ *
+ *             if (!MySQL_GetValueInt(0, "days", days)) {
  *                 @return;
  *             }
  *
- *             SendClientMessage(playerid, -1, "Registered %i days ago.", MySQL_GetInt(0, "days"));
+ *             SendClientMessage(playerid, -1, "Registered %i days ago.", days);
  *         }
  *
  *         MySQL_ThreadedQueryInline(gDatabase, using inline OnFound, "SELECT DATEDIFF(NOW(), registered) AS days FROM accounts WHERE name = %q", name);
