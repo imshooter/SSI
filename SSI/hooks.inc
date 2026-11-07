@@ -1202,8 +1202,7 @@ static stock bool:SSI_HooksCollectInternal() {
         ;
 
         while (k != 0 && SSI@hookFunction[k - 1][E_SSI_HOOK_BODY] > body) {
-            SSI@hookFunction[k] = SSI@hookFunction[k - 1];
-            --k;
+            SSI@hookFunction[k] = SSI@hookFunction[--k];
         }
 
         SSI@hookFunction[k][E_SSI_HOOK_TARGET] = SSI@Amx_Read(code + 4);
