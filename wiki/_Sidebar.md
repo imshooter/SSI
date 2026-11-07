@@ -20,6 +20,7 @@
 * [iterator](SSI-iterator.md)
 * [queue](SSI-queue.md)
 * [schedule](SSI-schedule.md)
+* [string](SSI-string.md)
 * [test](SSI-test.md)
 * [unique](SSI-unique.md)
 * [va](SSI-va.md)
