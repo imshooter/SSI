@@ -44,6 +44,7 @@ A file that declares hooks includes `SSI\hooks` after every other include. See [
 | [queue](wiki/SSI-queue.md) | Queues hand out the rows of an array and take them back first in, first out. |
 | [schedule](wiki/SSI-schedule.md) | Schedules hold a time for each id. |
 | [string](wiki/SSI-string.md) | Strings changed in place and compared, beyond the natives of open.mp. |
+| [task](wiki/SSI-task.md) | Functions that run on their own every so many milliseconds, as the tasks of y_timers. |
 | [test](wiki/SSI-test.md) | Tests, as in y_testing: functions declared with `test` that the script runs one after another when it starts, with checks that print what failed and where. |
 | [unique](wiki/SSI-unique.md) | Unique names: every `#include <SSI\unique>` moves on to a new suffix of two characters, and `SSI_UNIQUE<prefix...suffix>` writes the current one where the `...` is. |
 | [va](wiki/SSI-va.md) | Variable arguments: `___(n)` passes on the arguments a function got, from its `n`th on, anywhere among the arguments of a call, as y_va's `___`. |

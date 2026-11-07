@@ -36,6 +36,7 @@ SSI is a set of Pawn libraries for open.mp, built the way YSI is. The libraries 
 | [queue](SSI-queue.md) | Queues hand out the rows of an array and take them back first in, first out. |
 | [schedule](SSI-schedule.md) | Schedules hold a time for each id. |
 | [string](SSI-string.md) | Strings changed in place and compared, beyond the natives of open.mp. |
+| [task](SSI-task.md) | Functions that run on their own every so many milliseconds, as the tasks of y_timers. |
 | [test](SSI-test.md) | Tests, as in y_testing: functions declared with `test` that the script runs one after another when it starts, with checks that print what failed and where. |
 | [unique](SSI-unique.md) | Unique names: every `#include <SSI\unique>` moves on to a new suffix of two characters, and `SSI_UNIQUE<prefix...suffix>` writes the current one where the `...` is. |
 | [va](SSI-va.md) | Variable arguments: `___(n)` passes on the arguments a function got, from its `n`th on, anywhere among the arguments of a call, as y_va's `___`. |
