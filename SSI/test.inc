@@ -125,7 +125,6 @@ stock
 #else
     #define test%9\32;%0() static stock SSI@Te_%0()
 #endif
-#define TEST__ test
 
 /**
  * @brief      Check that a condition holds.

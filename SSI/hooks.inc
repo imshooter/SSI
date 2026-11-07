@@ -99,10 +99,6 @@
  *     }
  */
 #define hook%0(%1) forward SSI_UNIQUE<@H_%0@...>(%1);SSI_UNIQUE<@H_%0@...>(%1)
-#define HOOK__ hook
-#define HOOK_NATIVE__ hook native
-#define HOOK_FUNCTION__ hook function
-#define HOOK_STOCK__ hook stock
 
 /**
  * @brief      Set the default return of a callback: `1` joins the returns of its
