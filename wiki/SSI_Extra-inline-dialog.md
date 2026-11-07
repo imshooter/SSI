@@ -37,6 +37,9 @@ AskName(playerid) {
   leaves, or of a dialog closed with `Dialog_Close`.
 - Every dialog shown here uses `SSI_DIALOG_ID`. A dialog with another id
   never reaches an inline.
+- `Dialog_ShowPageInline` splits a long list into pages, with a row for the
+  next page and one for the page before. Turning a page shows the dialog
+  again and keeps the inline, which gets the row of the whole list.
 
 ## API
 
@@ -116,6 +119,39 @@ forward bool:Dialog_ShowTabListHeadersInline(playerid, Inline:callback<iis>, con
 ```
 
 `Dialog_ShowInline` with `DIALOG_STYLE_TABLIST_HEADERS`.
+
+### `Dialog_ShowPageInline`
+
+```pawn
+forward bool:Dialog_ShowPageInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const body[], const button1[], const button2[] = "", rows = SSI_DIALOG_PAGE_ROWS, OPEN_MP_TAGS:...);
+```
+
+Show a list split into pages whose answer calls an inline.
+
+The body is formatted with the arguments after `rows`, one row a line. With
+`DIALOG_STYLE_TABLIST_HEADERS` the first line is the header, shown on every
+page. The inline gets the row of the whole list, from `0`, or `-1` when the
+dialog is cancelled.
+
+| Parameter | Description |
+| --- | --- |
+| `playerid` | The player. |
+| `callback` | The inline, as `using inline Name`, taking the response, the row and its text. |
+| `style` | `DIALOG_STYLE_LIST`, `DIALOG_STYLE_TABLIST` or `DIALOG_STYLE_TABLIST_HEADERS`. |
+| `title` | The title. |
+| `body` | The rows. |
+| `button1` | The left button. |
+| `button2` | The right button, empty for none. |
+| `rows` | Rows on each page. |
+
+**Returns**
+
+- `true` it is shown
+- `false` the inline is freed, when:
+    + the player is not connected
+    + the inline could not be captured
+    + `style` is not a list style, or `rows` is below `1`
+    + the dialog could not be shown
 
 ### `Dialog_Close`
 
