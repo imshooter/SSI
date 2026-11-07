@@ -37,8 +37,9 @@ Remind(playerid) {
   it that many times.
 - The first call comes after `delay`, the same as `interval` when it is not
   given.
-- An inline can stop its own timer. Stopping a timer that ended, or was
-  never made, does nothing.
+- An inline stops its own timer with `Timer_Stop(Timer_Current())`, so it
+  needs no copy of the id. Stopping a timer that ended, or was never made,
+  does nothing.
 
 ## API
 
@@ -101,3 +102,24 @@ Whether a timer is still running.
 
 - `true` it is
 - `false` it ended, was stopped, or was never made
+
+### `Timer_Current`
+
+```pawn
+forward Timer:Timer_Current();
+```
+
+The timer whose inline is running.
+
+```pawn
+inline OnSecond() {
+    if (++seconds == limit) {
+        Timer_Stop(Timer_Current());
+    }
+}
+```
+
+**Returns**
+
+- the timer
+- `INVALID_TIMER_ID` outside the inline of a timer

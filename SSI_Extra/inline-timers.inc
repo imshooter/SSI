@@ -32,8 +32,9 @@
  *   it that many times.
  * - The first call comes after `delay`, the same as `interval` when it is not
  *   given.
- * - An inline can stop its own timer. Stopping a timer that ended, or was
- *   never made, does nothing.
+ * - An inline stops its own timer with `Timer_Stop(Timer_Current())`, so it
+ *   needs no copy of the id. Stopping a timer that ended, or was never made,
+ *   does nothing.
  */
 
 /**
@@ -60,7 +61,8 @@ static stock
 ;
 
 static stock
-    SSI@timer[SSI_TIMERS][E_TIMER_DATA]
+    SSI@timer[SSI_TIMERS][E_TIMER_DATA],
+    Timer:SSI@timerCurrent = INVALID_TIMER_ID
 ;
 
 /**
@@ -108,10 +110,24 @@ forward bool:Timer_Stop(Timer:timer);
 forward bool:Timer_IsRunning(Timer:timer);
 
 /**
+ * @brief      The timer whose inline is running.
+ *
+ *     inline OnSecond() {
+ *         if (++seconds == limit) {
+ *             Timer_Stop(Timer_Current());
+ *         }
+ *     }
+ *
+ * @return     - the timer
+ *             - `INVALID_TIMER_ID` outside the inline of a timer
+ */
+forward Timer:Timer_Current();
+
+/**
  * # Internal
  */
 
-forward @SSI_TimerFire(ticket);
+forward @SSI_TimerFire(Timer:timer);
 
 #define SSI_Timer_Slot(%0) Collection_Redeem(TimerSlot, _:(%0))
 
@@ -160,7 +176,7 @@ stock Timer:Timer_StartInline(Inline:callback<>, interval, count = 0, delay = -1
     }
 
     new const
-        ticket = Collection_Ticket(TimerSlot, slot),
+        Timer:timer = Timer:Collection_Ticket(TimerSlot, slot),
         first = (delay < 0) ? interval : delay,
         bool:repeating = (first == interval && count != 1)
     ;
@@ -169,9 +185,9 @@ stock Timer:Timer_StartInline(Inline:callback<>, interval, count = 0, delay = -1
     SSI@timer[slot][E_TIMER_LEFT] = count;
     SSI@timer[slot][E_TIMER_INTERVAL] = interval;
     SSI@timer[slot][E_TIMER_REPEATING] = repeating;
-    SSI@timer[slot][E_TIMER_ID] = SetTimerEx("@SSI_TimerFire", first, repeating, "i", ticket);
+    SSI@timer[slot][E_TIMER_ID] = SetTimerEx("@SSI_TimerFire", first, repeating, "i", _:timer);
 
-    return Timer:ticket;
+    return timer;
 }
 
 stock bool:Timer_Stop(Timer:timer) {
@@ -192,13 +208,17 @@ stock bool:Timer_IsRunning(Timer:timer) {
     return SSI_Timer_Slot(timer) != INVALID_TIMER_SLOT;
 }
 
+stock Timer:Timer_Current() {
+    return SSI@timerCurrent;
+}
+
 /**
  * # Calls
  */
 
-public @SSI_TimerFire(ticket) {
+public @SSI_TimerFire(Timer:timer) {
     new const
-        TimerSlot:slot = Collection_Redeem(TimerSlot, ticket)
+        TimerSlot:slot = SSI_Timer_Slot(timer)
     ;
 
     if (slot == INVALID_TIMER_SLOT) {
@@ -210,13 +230,19 @@ public @SSI_TimerFire(ticket) {
 
         if (SSI@timer[slot][E_TIMER_LEFT] != 1) {
             SSI@timer[slot][E_TIMER_REPEATING] = true;
-            SSI@timer[slot][E_TIMER_ID] = SetTimerEx("@SSI_TimerFire", SSI@timer[slot][E_TIMER_INTERVAL], true, "i", ticket);
+            SSI@timer[slot][E_TIMER_ID] = SetTimerEx("@SSI_TimerFire", SSI@timer[slot][E_TIMER_INTERVAL], true, "i", _:timer);
         }
     }
 
-    Inline_Call(SSI@timer[slot][E_TIMER_INLINE]);
+    new const
+        Timer:outer = SSI@timerCurrent
+    ;
 
-    if (Collection_Redeem(TimerSlot, ticket) == INVALID_TIMER_SLOT) {
+    SSI@timerCurrent = timer;
+    Inline_Call(SSI@timer[slot][E_TIMER_INLINE]);
+    SSI@timerCurrent = outer;
+
+    if (SSI_Timer_Slot(timer) == INVALID_TIMER_SLOT) {
         return 0;
     }
 
