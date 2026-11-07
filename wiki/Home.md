@@ -3,7 +3,7 @@
 > [!NOTE]
 > Experimental version, already running in production. Made with Claude Opus 5.5.
 
-SSI is a set of Pawn libraries for open.mp, built the way YSI is. The libraries live in the `SSI` folder, and the inline versions of plugin functions in `SSI_Extra`. Each one is included by its folder and name:
+SSI is a set of Pawn libraries for open.mp, built the way YSI is. The libraries live in the `SSI` folder, the inline versions of plugin functions in `SSI_Extra`, and the vehicle libraries in `SSI_Vehicle`. Each one is included by its folder and name:
 
 ```pawn
 #include <SSI\collection>
@@ -52,3 +52,16 @@ SSI is a set of Pawn libraries for open.mp, built the way YSI is. The libraries 
 | [inline-object](SSI_Extra-inline-object.md) | Dynamic objects that call an inline when they finish moving, while a player edits them, or when a player selects one. |
 | [inline-pg](SSI_Extra-inline-pg.md) | Queries of the omp-postgresql component answered by an inline, with every value sent apart from the query, so nothing is ever escaped. |
 | [inline-timers](SSI_Extra-inline-timers.md) | Timers that call an inline. |
+
+### SSI_Vehicle
+
+| Library | Description |
+| --- | --- |
+| [components](SSI_Vehicle-components.md) | The tuning parts of the game: their type, name, price, shop and pair, and which vehicle models take each one. |
+| [forklift](SSI_Vehicle-forklift.md) | Crates a forklift lifts, carries and stacks. |
+| [math](SSI_Vehicle-math.md) | The geometry of a vehicle in the world: its speed, whether it lies on its roof, and where a point of its body, its bonnet, boot or a wheel is as it leans and turns. |
+| [model](SSI_Vehicle-model.md) | Name, category and flags of every vehicle model, read by model id. |
+| [neon](SSI_Vehicle-neon.md) | Neon under a vehicle: two tubes of a colour along its sides, attached as streamer objects, so the light follows the vehicle wherever it goes. |
+| [objective](SSI_Vehicle-objective.md) | Marks the vehicle a player was sent to with the yellow arrow and a radar blip. |
+| [parts](SSI_Vehicle-parts.md) | The parts of a vehicle one at a time: some parameters, a door, window, tyre, lamp or panel is set while the others keep what the game has. |
+| [speed-camera](SSI_Vehicle-speed-camera.md) | Speed cameras: a pole by the road and a sphere of streamer area around it. |

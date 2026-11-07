@@ -15,7 +15,7 @@ Simply install to your project:
 sampctl package install imshooter/SSI
 ```
 
-Or copy the `SSI` and `SSI_Extra` folders into the include folder of your compiler, such as `qawno/include`.
+Or copy the `SSI`, `SSI_Extra` and `SSI_Vehicle` folders into the include folder of your compiler, such as `qawno/include`.
 
 Include in your code and begin using the library:
 
@@ -61,6 +61,19 @@ A file that declares hooks includes `SSI\hooks` after every other include. See [
 | [inline-pg](wiki/SSI_Extra-inline-pg.md) | Queries of the omp-postgresql component answered by an inline, with every value sent apart from the query, so nothing is ever escaped. |
 | [inline-timers](wiki/SSI_Extra-inline-timers.md) | Timers that call an inline. |
 
+### SSI_Vehicle
+
+| Library | Description |
+| --- | --- |
+| [components](wiki/SSI_Vehicle-components.md) | The tuning parts of the game: their type, name, price, shop and pair, and which vehicle models take each one. |
+| [forklift](wiki/SSI_Vehicle-forklift.md) | Crates a forklift lifts, carries and stacks. |
+| [math](wiki/SSI_Vehicle-math.md) | The geometry of a vehicle in the world: its speed, whether it lies on its roof, and where a point of its body, its bonnet, boot or a wheel is as it leans and turns. |
+| [model](wiki/SSI_Vehicle-model.md) | Name, category and flags of every vehicle model, read by model id. |
+| [neon](wiki/SSI_Vehicle-neon.md) | Neon under a vehicle: two tubes of a colour along its sides, attached as streamer objects, so the light follows the vehicle wherever it goes. |
+| [objective](wiki/SSI_Vehicle-objective.md) | Marks the vehicle a player was sent to with the yellow arrow and a radar blip. |
+| [parts](wiki/SSI_Vehicle-parts.md) | The parts of a vehicle one at a time: some parameters, a door, window, tyre, lamp or panel is set while the others keep what the game has. |
+| [speed-camera](wiki/SSI_Vehicle-speed-camera.md) | Speed cameras: a pole by the road and a sphere of streamer area around it. |
+
 ## Documentation
 
 The [wiki](wiki/Home.md) has a page for each library, with a quick start and every function, macro and event it declares. Each folder also has a `.md` file next to each include that links to its page.
@@ -81,9 +94,9 @@ The test prints every failed check and a summary, then closes the server.
 
 ## License
 
-SSI is released under the [MIT License](LICENSE).
+SSI is released under the [MIT License](LICENSE), apart from `SSI_Vehicle\model`. Its model data comes from y_vehicledata of YSI, so that file stays under the [Mozilla Public License 1.1](LICENSE-MPL), with the notice of YSI at its top.
 
 ## Thanks to
 
-* [@Y-Less](https://github.com/Y-Less) for YSI, the model for the layout of this repository and for many of its interfaces.
+* [@Y-Less](https://github.com/Y-Less) for YSI, the model for the layout of this repository and for many of its interfaces, and for the vehicle data of y_vehicledata.
 * [@IllidanS4](https://github.com/IllidanS4) for PawnPlus, which `SSI\iterator` uses to follow vehicles and actors.

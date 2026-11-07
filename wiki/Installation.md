@@ -13,12 +13,13 @@ With sampctl:
 sampctl package install imshooter/SSI
 ```
 
-By hand, copy the `SSI` and `SSI_Extra` folders into the include folder of the compiler, such as `qawno/include`. The tree then looks like this:
+By hand, copy the `SSI`, `SSI_Extra` and `SSI_Vehicle` folders into the include folder of the compiler, such as `qawno/include`. The tree then looks like this:
 
 ```
 qawno/include/
     SSI/
     SSI_Extra/
+    SSI_Vehicle/
 ```
 
 ## Including
@@ -47,6 +48,8 @@ Most libraries need nothing beyond open.mp. These need a plugin or component:
 | `SSI_Extra\inline-bcrypt` | [samp-bcrypt](https://github.com/Sreyas-Sreelal/samp-bcrypt) |
 | `SSI_Extra\inline-argon2` | [async-crypto](https://github.com/roseeast/async-crypto) |
 | `SSI_Extra\inline-pg` | [omp-postgresql](https://github.com/itskoleban/omp-postgresql) |
+| `SSI_Vehicle\objective`, `SSI_Vehicle\neon`, `SSI_Vehicle\speed-camera` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin) |
+| `SSI_Vehicle\forklift` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin), [3DAndreas](https://github.com/imshooter/3DAndreas) |
 
 `SSI\group` allows and denies commands only when `SSI\command` is included before it.
 
