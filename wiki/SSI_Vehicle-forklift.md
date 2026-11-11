@@ -17,8 +17,9 @@
 ## Quick Start
 
 Crates a forklift lifts, carries and stacks. A crate is a streamer object
-with the collision of its model in 3DAndreas, so crates stack on each other
-and none is put down inside a wall.
+with a box of the size of its model in 3DAndreas, so crates stack on each
+other and none is put down inside a wall. A box is ten times cheaper to
+query than the mesh of the model.
 
 ```pawn
 new const
@@ -35,12 +36,14 @@ new const
   where the real forks stop too.
 - A crate is lifted when the forks rise under it: centred on them, turned
   with the forklift, and at the height of the forks. It then sits straight
-  against the mast. Only the top crate of a stack is lifted. It is put down
-  when the forks lower it onto the ground or onto another crate, which it is
-  lined up with.
+  against the mast. A crate with one crate on it is lifted with that one,
+  so a stack of two comes up from the bottom and its top alone from its
+  own height. What is lifted is put down when the forks lower it onto the
+  ground or onto another crate, which it is lined up with.
 - The game lets a vehicle push some models, which the server never learns.
   A crate a driven forklift touches without lifting goes back to its place
-  once the forklift leaves it.
+  as soon as that forklift leaves it. A forklift that stands still with its
+  forks at rest is not checked again.
 - A crate on a forklift that respawns, dies or is destroyed goes back to
   where it was lifted from. When something stands there now, it is put
   down under the forks instead.
@@ -131,6 +134,42 @@ Whether a crate exists.
 
 - `true` it exists
 - `false` it does not
+
+### `GetCrateModel`
+
+```pawn
+forward GetCrateModel(Crate:crateid);
+```
+
+The model of a crate.
+
+| Parameter | Description |
+| --- | --- |
+| `crateid` | Crate to read. |
+
+**Returns**
+
+- the model
+- `-1` `crateid` is not a crate
+
+### `GetCrateSize`
+
+```pawn
+forward bool:GetCrateSize(Crate:crateid, &Float:width, &Float:depth);
+```
+
+The size of a crate, from the box of its model.
+
+| Parameter | Description |
+| --- | --- |
+| `crateid` | Crate to read. |
+| `width` | Reads back its size on its X axis. |
+| `depth` | Reads back its size on its Y axis. |
+
+**Returns**
+
+- `true` the outputs were written
+- `false` `crateid` is not a crate
 
 ### `GetCrateObject`
 
@@ -262,12 +301,33 @@ The forks of a forklift are rising under a crate.
 event OnCrateLifted(Crate:crateid, vehicleid);
 ```
 
-A forklift lifted a crate.
+A forklift lifted a crate. A stack of two gives a call for the bottom crate, then one for the top crate.
 
 | Parameter | Description |
 | --- | --- |
 | `crateid` | The crate. |
 | `vehicleid` | The forklift. |
+
+### `OnCrateLower`
+
+```pawn
+event OnCrateLower(Crate:crateid, vehicleid, Float:x, Float:y, Float:z);
+```
+
+The forks are going down with a crate, before ground is looked for under it. A handler that puts the crate somewhere else, such as on a vehicle, destroys it here and returns `1`.
+
+| Parameter | Description |
+| --- | --- |
+| `crateid` | The crate. |
+| `vehicleid` | The forklift. |
+| `x` | X of the crate. |
+| `y` | Y of the crate. |
+| `z` | Z of its bottom. |
+
+**Returns**
+
+- `0` it is put down as usual
+- `1` it was taken
 
 ### `OnCrateDrop`
 

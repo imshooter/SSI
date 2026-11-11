@@ -1,6 +1,6 @@
 # forklift
 
-Crates a forklift lifts, carries and stacks. A crate is a streamer object with the collision of its model in 3DAndreas, so crates stack on each other and none is put down inside a wall.
+Crates a forklift lifts, carries and stacks. A crate is a streamer object with a box of the size of its model in 3DAndreas, so crates stack on each other and none is put down inside a wall. A box is ten times cheaper to query than the mesh of the model.
 
 ## SSI
 
