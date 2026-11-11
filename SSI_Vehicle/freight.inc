@@ -21,13 +21,13 @@
  *   opens from, within `FREIGHT_FACING` degrees. Where the forks cannot pass
  *   that side the crate may stay outside the vehicle, its edge at most
  *   `FREIGHT_REACH` from the end of the vehicle model. On a flat bed the
- *   forks reach over, its centre is over the slots, as it is towards the
- *   sides it is not brought from. Brought from an end of the vehicle, the
- *   crate goes to the free slot furthest in, and from a side to the nearest.
- *   A stack of two takes two free slots of one row, side by side, or the next
- *   slot by the same rule when no row has two. `OnCrateLoad` can refuse a
- *   crate, once each time it is lowered, and the crate or the stack is then
- *   put down as usual.
+ *   forks reach over, and half the crate at least is over the outer slots on
+ *   that side. Towards the sides it is not brought from its centre stays over
+ *   the slots. Brought from an end of the vehicle, the crate goes to the free
+ *   slot furthest in, and from a side to the nearest. A stack of two takes two
+ *   free slots of one row, side by side, or the next slot by the same rule
+ *   when no row has two. `OnCrateLoad` can refuse a crate, once each time it
+ *   is lowered, and the crate or the stack is then put down as usual.
  */
 #include <open.mp>
 #include <streamer>
@@ -532,16 +532,22 @@ stock bool:IsVehicleFreightOpen(vehicleid) {
                 Float:rowGap = gFreightData[freightid][E_FREIGHT_ROW_GAP],
                 Float:sideGap = (columnGap * 0.5 > half) ? columnGap * 0.5 : half,
                 Float:endGap = (rowGap * 0.5 > half) ? rowGap * 0.5 : half,
-                Float:outsideX = gFreightData[freightid][E_FREIGHT_HALF_WIDTH] + half + FREIGHT_REACH,
-                Float:outsideY = gFreightData[freightid][E_FREIGHT_HALF_LENGTH] + half + FREIGHT_REACH,
-                FREIGHT_SIDE:outside = gFreightData[freightid][E_FREIGHT_BED] ? FREIGHT_SIDE_NONE : from
+                Float:right = gFreightData[freightid][E_FREIGHT_RIGHT],
+                Float:back = gFreightData[freightid][E_FREIGHT_BACK],
+                Float:bodyX = gFreightData[freightid][E_FREIGHT_HALF_WIDTH] + half + FREIGHT_REACH,
+                Float:bodyY = gFreightData[freightid][E_FREIGHT_HALF_LENGTH] + half + FREIGHT_REACH,
+                bool:bed = gFreightData[freightid][E_FREIGHT_BED],
+                Float:minX = (from != FREIGHT_SIDE_LEFT) ? left - sideGap : (bed ? left - sideGap - half : -bodyX),
+                Float:maxX = (from != FREIGHT_SIDE_RIGHT) ? right + sideGap : (bed ? right + sideGap + half : bodyX),
+                Float:minY = (from != FREIGHT_SIDE_BACK) ? back - endGap : (bed ? back - endGap - half : -bodyY),
+                Float:maxY = (from != FREIGHT_SIDE_FRONT) ? front + endGap : (bed ? front + endGap + half : bodyY)
             ;
 
-            if (!(((outside == FREIGHT_SIDE_LEFT) ? -outsideX : left - sideGap) <= offsetX <= ((outside == FREIGHT_SIDE_RIGHT) ? outsideX : gFreightData[freightid][E_FREIGHT_RIGHT] + sideGap))) {
+            if (!(minX <= offsetX <= maxX)) {
                 continue;
             }
 
-            if (!(((outside == FREIGHT_SIDE_BACK) ? -outsideY : gFreightData[freightid][E_FREIGHT_BACK] - endGap) <= offsetY <= ((outside == FREIGHT_SIDE_FRONT) ? outsideY : front + endGap))) {
+            if (!(minY <= offsetY <= maxY)) {
                 continue;
             }
 

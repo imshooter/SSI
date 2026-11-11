@@ -33,13 +33,13 @@ AddVehicleFreight(vehicleid, 1558);
   opens from, within `FREIGHT_FACING` degrees. Where the forks cannot pass
   that side the crate may stay outside the vehicle, its edge at most
   `FREIGHT_REACH` from the end of the vehicle model. On a flat bed the
-  forks reach over, its centre is over the slots, as it is towards the
-  sides it is not brought from. Brought from an end of the vehicle, the
-  crate goes to the free slot furthest in, and from a side to the nearest.
-  A stack of two takes two free slots of one row, side by side, or the next
-  slot by the same rule when no row has two. `OnCrateLoad` can refuse a
-  crate, once each time it is lowered, and the crate or the stack is then
-  put down as usual.
+  forks reach over, and half the crate at least is over the outer slots on
+  that side. Towards the sides it is not brought from its centre stays over
+  the slots. Brought from an end of the vehicle, the crate goes to the free
+  slot furthest in, and from a side to the nearest. A stack of two takes two
+  free slots of one row, side by side, or the next slot by the same rule
+  when no row has two. `OnCrateLoad` can refuse a crate, once each time it
+  is lowered, and the crate or the stack is then put down as usual.
 
 ## API
 
