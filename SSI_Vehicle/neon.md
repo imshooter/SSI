@@ -1,6 +1,6 @@
 # neon
 
-Neon under a vehicle: two tubes of a colour along its sides, attached as streamer objects, so the light follows the vehicle wherever it goes.
+Neon under a vehicle: two tubes of a colour along its sides, or one down the middle of a model narrower than `VEHICLE_NEON_NARROW`, such as a motorbike. They are attached as streamer objects, so the light follows the vehicle wherever it goes.
 
 ## SSI
 

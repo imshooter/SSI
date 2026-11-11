@@ -11,16 +11,19 @@
 
 ## Quick Start
 
-Neon under a vehicle: two tubes of a colour along its sides, attached as
-streamer objects, so the light follows the vehicle wherever it goes.
+Neon under a vehicle: two tubes of a colour along its sides, or one down the
+middle of a model narrower than `VEHICLE_NEON_NARROW`, such as a motorbike.
+They are attached as streamer objects, so the light follows the vehicle
+wherever it goes.
 
 ```pawn
 SetVehicleNeon(vehicleid, VEHICLE_NEON_BLUE);
 SetVehicleNeon(vehicleid, VEHICLE_NEON_NONE);
 ```
 
-- The tubes stand `VEHICLE_NEON_SIDE` of the width out from the middle and
-  `VEHICLE_NEON_LOW` of the height down, so they fit the size of the model.
+- The tubes stand `VEHICLE_NEON_SIDE` of the width out from the middle, at
+  the height of the axles plus `VEHICLE_NEON_LIFT`, so they fit the model. A
+  model without wheels has them `VEHICLE_NEON_LOW` of its height down.
 - They keep the world and interior of the vehicle when the script moves it
   with `SetVehicleVirtualWorld` or `LinkVehicleToInterior`, and go away with
   it in `DestroyVehicle`.

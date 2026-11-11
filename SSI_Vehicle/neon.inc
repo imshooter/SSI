@@ -8,14 +8,17 @@
 #include <SSI\hooks>
 
 /**
- * Neon under a vehicle: two tubes of a colour along its sides, attached as
- * streamer objects, so the light follows the vehicle wherever it goes.
+ * Neon under a vehicle: two tubes of a colour along its sides, or one down the
+ * middle of a model narrower than `VEHICLE_NEON_NARROW`, such as a motorbike.
+ * They are attached as streamer objects, so the light follows the vehicle
+ * wherever it goes.
  *
  *     SetVehicleNeon(vehicleid, VEHICLE_NEON_BLUE);
  *     SetVehicleNeon(vehicleid, VEHICLE_NEON_NONE);
  *
- * - The tubes stand `VEHICLE_NEON_SIDE` of the width out from the middle and
- *   `VEHICLE_NEON_LOW` of the height down, so they fit the size of the model.
+ * - The tubes stand `VEHICLE_NEON_SIDE` of the width out from the middle, at
+ *   the height of the axles plus `VEHICLE_NEON_LIFT`, so they fit the model. A
+ *   model without wheels has them `VEHICLE_NEON_LOW` of its height down.
  * - They keep the world and interior of the vehicle when the script moves it
  *   with `SetVehicleVirtualWorld` or `LinkVehicleToInterior`, and go away with
  *   it in `DestroyVehicle`.
@@ -26,11 +29,19 @@
  */
 
 #if !defined VEHICLE_NEON_SIDE
-    #define VEHICLE_NEON_SIDE (0.4)
+    #define VEHICLE_NEON_SIDE (0.3)
 #endif
 
 #if !defined VEHICLE_NEON_LOW
     #define VEHICLE_NEON_LOW (0.5)
+#endif
+
+#if !defined VEHICLE_NEON_LIFT
+    #define VEHICLE_NEON_LIFT (-0.35)
+#endif
+
+#if !defined VEHICLE_NEON_NARROW
+    #define VEHICLE_NEON_NARROW (1.0)
 #endif
 
 #define VEHICLE_NEON_TUBES (2)
@@ -47,7 +58,8 @@ enum VEHICLE_NEON {
 
 static enum E_VEHICLE_NEON_DATA {
     VEHICLE_NEON:E_VEHICLE_NEON_COLOUR,
-    STREAMER_TAG_OBJECT:E_VEHICLE_NEON_TUBE[VEHICLE_NEON_TUBES]
+    STREAMER_TAG_OBJECT:E_VEHICLE_NEON_TUBE[VEHICLE_NEON_TUBES],
+    E_VEHICLE_NEON_TUBE_COUNT
 };
 
 static stock const gNeonModel[VEHICLE_NEON] = {
@@ -98,7 +110,7 @@ static stock RemoveVehicleNeonInternal(vehicleid) {
         return;
     }
 
-    for (new i; i != VEHICLE_NEON_TUBES; ++i) {
+    for (new i; i != gVehicleNeon[vehicleid][E_VEHICLE_NEON_TUBE_COUNT]; ++i) {
         DestroyDynamicObject(gVehicleNeon[vehicleid][E_VEHICLE_NEON_TUBE][i]);
     }
 
@@ -110,7 +122,7 @@ static stock SetVehicleNeonDataInternal(vehicleid, data, value) {
         return;
     }
 
-    for (new i; i != VEHICLE_NEON_TUBES; ++i) {
+    for (new i; i != gVehicleNeon[vehicleid][E_VEHICLE_NEON_TUBE_COUNT]; ++i) {
         Streamer_SetIntData(STREAMER_TYPE_OBJECT, gVehicleNeon[vehicleid][E_VEHICLE_NEON_TUBE][i], data, value);
     }
 }
@@ -133,24 +145,30 @@ stock bool:SetVehicleNeon(vehicleid, VEHICLE_NEON:neon) {
     new
         Float:sizeX,
         Float:sizeY,
-        Float:sizeZ
+        Float:sizeZ,
+        Float:wheelX,
+        Float:wheelY,
+        Float:wheelZ
     ;
 
     GetVehicleModelInfo(GetVehicleModel(vehicleid), VEHICLE_MODEL_INFO_SIZE, sizeX, sizeY, sizeZ);
+    GetVehicleModelInfo(GetVehicleModel(vehicleid), VEHICLE_MODEL_INFO_WHEELSFRONT, wheelX, wheelY, wheelZ);
 
     new const
-        Float:side = sizeX * VEHICLE_NEON_SIDE,
-        Float:low = -sizeZ * VEHICLE_NEON_LOW,
+        count = (sizeX < VEHICLE_NEON_NARROW) ? 1 : VEHICLE_NEON_TUBES,
+        Float:side = (count == 1) ? 0.0 : sizeX * VEHICLE_NEON_SIDE,
+        Float:low = (wheelZ < 0.0) ? wheelZ + VEHICLE_NEON_LIFT : -sizeZ * VEHICLE_NEON_LOW,
         worldid = GetVehicleVirtualWorld(vehicleid),
         interiorid = GetVehicleInterior(vehicleid)
     ;
 
-    for (new i; i != VEHICLE_NEON_TUBES; ++i) {
+    for (new i; i != count; ++i) {
         gVehicleNeon[vehicleid][E_VEHICLE_NEON_TUBE][i] = CreateDynamicObject(gNeonModel[neon], 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, worldid, interiorid);
         AttachDynamicObjectToVehicle(gVehicleNeon[vehicleid][E_VEHICLE_NEON_TUBE][i], vehicleid, (i == 0) ? -side : side, 0.0, low, 0.0, 0.0, 0.0);
     }
 
     gVehicleNeon[vehicleid][E_VEHICLE_NEON_COLOUR] = neon;
+    gVehicleNeon[vehicleid][E_VEHICLE_NEON_TUBE_COUNT] = count;
 
     return true;
 }
