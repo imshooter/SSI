@@ -57,11 +57,13 @@ SSI is a set of Pawn libraries for open.mp, built the way YSI is. The libraries 
 
 | Library | Description |
 | --- | --- |
+| [colour](SSI_Vehicle-colour.md) | The 128 paint colours of the game, from `carcols.dat`, as RGBA for drawing a swatch of them. |
 | [components](SSI_Vehicle-components.md) | The tuning parts of the game: their type, name, price, shop and pair, and which vehicle models take each one. |
 | [forklift](SSI_Vehicle-forklift.md) | Crates a forklift lifts, carries and stacks. |
+| [freight](SSI_Vehicle-freight.md) | Freight that rides in the back of a vehicle, each piece in a slot of a grid set for that vehicle. |
 | [math](SSI_Vehicle-math.md) | The geometry of a vehicle in the world: its speed, whether it lies on its roof, and where a point of its body, its bonnet, boot or a wheel is as it leans and turns. |
 | [model](SSI_Vehicle-model.md) | Name, category and flags of every vehicle model, read by model id. |
-| [neon](SSI_Vehicle-neon.md) | Neon under a vehicle: two tubes of a colour along its sides, attached as streamer objects, so the light follows the vehicle wherever it goes. |
+| [neon](SSI_Vehicle-neon.md) | Neon under a vehicle: two tubes of a colour along its sides, or one down the middle of a model narrower than `VEHICLE_NEON_NARROW`, such as a motorbike. |
 | [objective](SSI_Vehicle-objective.md) | Marks the vehicle a player was sent to with the yellow arrow and a radar blip. |
 | [parts](SSI_Vehicle-parts.md) | The parts of a vehicle one at a time: some parameters, a door, window, tyre, lamp or panel is set while the others keep what the game has. |
 | [speed-camera](SSI_Vehicle-speed-camera.md) | Speed cameras: a pole by the road and a sphere of streamer area around it. |

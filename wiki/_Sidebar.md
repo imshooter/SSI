@@ -38,8 +38,10 @@
 
 **SSI_Vehicle**
 
+* [colour](SSI_Vehicle-colour.md)
 * [components](SSI_Vehicle-components.md)
 * [forklift](SSI_Vehicle-forklift.md)
+* [freight](SSI_Vehicle-freight.md)
 * [math](SSI_Vehicle-math.md)
 * [model](SSI_Vehicle-model.md)
 * [neon](SSI_Vehicle-neon.md)
