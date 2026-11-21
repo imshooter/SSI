@@ -149,7 +149,7 @@ stock bool:SSI@Schedule_Set(next[], prev[], group[], count[], &free, time[], tic
     }
 
     if (group[id] == -1) {
-        ++tick[2];
+        tick[2] += 1;
     } else {
         SSI@GroupPool_Remove(next, prev, group, count, free, size, id);
     }
@@ -186,7 +186,7 @@ stock bool:SSI@Schedule_Remove(next[], prev[], group[], count[], &free, tick[], 
         tick[1] = -1;
     }
 
-    --tick[2];
+    tick[2] -= 1;
 
     return true;
 }
