@@ -162,7 +162,7 @@ forward bool:Postgres_Close(connection);
  * @param      connection  The connection.
  * @param      callback    The inline, as `using inline Name`, taking the error,
  *                         `PG_ERROR_NONE` when the query ran.
- * @param      query       The query, with a specifier for each argument after
+ * @param      format      The query, with a specifier for each argument after
  *                         it.
  *
  * @return     - `true` the query is sent, or waits for room
@@ -175,19 +175,19 @@ forward bool:Postgres_Close(connection);
  *                 + the component refused it, or `connection` is closed
  *                 + `SSI_POSTGRES_REQUESTS` queries are waiting
  */
-forward bool:Postgres_QueryInline(connection, Inline:callback<i>, const query[], OPEN_MP_TAGS:...);
+forward bool:Postgres_QueryInline(connection, Inline:callback<i>, const format[], OPEN_MP_TAGS:...);
 
 /**
  * @brief      Send a query that needs no answer.
  *
  * @param      connection  The connection.
- * @param      query       The query, with a specifier for each argument after
+ * @param      format      The query, with a specifier for each argument after
  *                         it.
  *
  * @return     - `true` the query is sent, or waits for room
  *             - `false` for the reasons of `Postgres_QueryInline`
  */
-forward bool:Postgres_Query(connection, const query[], OPEN_MP_TAGS:...);
+forward bool:Postgres_Query(connection, const format[], OPEN_MP_TAGS:...);
 
 /**
  * @brief      The rows of the active result. Called in the inline of a query,
@@ -812,7 +812,7 @@ stock bool:Postgres_Close(connection) {
     return true;
 }
 
-stock bool:Postgres_QueryInline(connection, Inline:callback<i>, const query[], OPEN_MP_TAGS:...) {
+stock bool:Postgres_QueryInline(connection, Inline:callback<i>, const format[], OPEN_MP_TAGS:...) {
     new const
         Inline:closure = callback
     ;
@@ -821,11 +821,11 @@ stock bool:Postgres_QueryInline(connection, Inline:callback<i>, const query[], O
         return false;
     }
 
-    return SSI_PostgresSendInternal(connection, closure, query, 3);
+    return SSI_PostgresSendInternal(connection, closure, format, 3);
 }
 
-stock bool:Postgres_Query(connection, const query[], OPEN_MP_TAGS:...) {
-    return SSI_PostgresSendInternal(connection, INVALID_INLINE, query, 2);
+stock bool:Postgres_Query(connection, const format[], OPEN_MP_TAGS:...) {
+    return SSI_PostgresSendInternal(connection, INVALID_INLINE, format, 2);
 }
 
 stock Postgres_Rows() {

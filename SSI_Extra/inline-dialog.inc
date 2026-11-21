@@ -102,7 +102,7 @@ static stock
 /**
  * @brief      Show a dialog whose answer calls an inline.
  *
- * The body is formatted with the arguments after `button2`, as
+ * `format` is formatted with the arguments after `button2`, as
  * `ShowPlayerDialog` does.
  *
  * @param      playerid  The player.
@@ -110,7 +110,7 @@ static stock
  *                       response, the list item and the text.
  * @param      style     The style.
  * @param      title     The title.
- * @param      body      The body.
+ * @param      format    The body.
  * @param      button1   The left button.
  * @param      button2   The right button, empty for none.
  *
@@ -120,42 +120,42 @@ static stock
  *                 + the inline could not be captured
  *                 + the dialog could not be shown
  */
-forward bool:Dialog_ShowInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 
 /**
  * @brief      `Dialog_ShowInline` with `DIALOG_STYLE_MSGBOX`.
  */
-forward bool:Dialog_ShowMessageBoxInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowMessageBoxInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 
 /**
  * @brief      `Dialog_ShowInline` with `DIALOG_STYLE_INPUT`.
  */
-forward bool:Dialog_ShowInputInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowInputInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 
 /**
  * @brief      `Dialog_ShowInline` with `DIALOG_STYLE_LIST`.
  */
-forward bool:Dialog_ShowListInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowListInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 
 /**
  * @brief      `Dialog_ShowInline` with `DIALOG_STYLE_PASSWORD`.
  */
-forward bool:Dialog_ShowPasswordInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowPasswordInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 
 /**
  * @brief      `Dialog_ShowInline` with `DIALOG_STYLE_TABLIST`.
  */
-forward bool:Dialog_ShowTabListInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowTabListInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 
 /**
  * @brief      `Dialog_ShowInline` with `DIALOG_STYLE_TABLIST_HEADERS`.
  */
-forward bool:Dialog_ShowTabListHeadersInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowTabListHeadersInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 
 /**
  * @brief      Show a list split into pages whose answer calls an inline.
  *
- * The body is formatted with the arguments after `rows`, one row a line. With
+ * `format` is formatted with the arguments after `rows`, one row a line. With
  * `DIALOG_STYLE_TABLIST_HEADERS` the first line is the header, shown on every
  * page. The inline gets the row of the whole list, from `0`, or `-1` when the
  * dialog is cancelled.
@@ -166,7 +166,7 @@ forward bool:Dialog_ShowTabListHeadersInline(playerid, Inline:callback<iis>, con
  * @param      style     `DIALOG_STYLE_LIST`, `DIALOG_STYLE_TABLIST` or
  *                       `DIALOG_STYLE_TABLIST_HEADERS`.
  * @param      title     The title.
- * @param      body      The rows.
+ * @param      format    The rows.
  * @param      button1   The left button.
  * @param      button2   The right button, empty for none.
  * @param      rows      Rows on each page.
@@ -178,7 +178,7 @@ forward bool:Dialog_ShowTabListHeadersInline(playerid, Inline:callback<iis>, con
  *                 + `style` is not a list style, or `rows` is below `1`
  *                 + the dialog could not be shown
  */
-forward bool:Dialog_ShowPageInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const body[], const button1[], const button2[] = "", rows = SSI_DIALOG_PAGE_ROWS, OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowPageInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const format[], const button1[], const button2[] = "", rows = SSI_DIALOG_PAGE_ROWS, OPEN_MP_TAGS:...);
 
 /**
  * @brief      Close the inline dialog of a player without calling its inline.
@@ -303,7 +303,7 @@ static stock SSI_DialogPageBackInternal(playerid, const body[]) {
  * # External
  */
 
-stock bool:Dialog_ShowInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
+stock bool:Dialog_ShowInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
     new const
         Inline:closure = callback
     ;
@@ -318,7 +318,11 @@ stock bool:Dialog_ShowInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style,
         return false;
     }
 
-    if (!ShowPlayerDialog(playerid, SSI_DIALOG_ID, style, title, body, button1, button2, ___(7))) {
+    new const
+        bool:shown = (numargs() == 7) ? ShowPlayerDialog(playerid, SSI_DIALOG_ID, style, title, "%s", button1, button2, format) : ShowPlayerDialog(playerid, SSI_DIALOG_ID, style, title, format, button1, button2, ___(7))
+    ;
+
+    if (!shown) {
         Inline_Free(closure);
 
         return false;
@@ -331,31 +335,31 @@ stock bool:Dialog_ShowInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style,
     return true;
 }
 
-stock bool:Dialog_ShowMessageBoxInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
-    return Dialog_ShowInline(playerid, callback, DIALOG_STYLE_MSGBOX, title, body, button1, button2, ___(6));
+stock bool:Dialog_ShowMessageBoxInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
+    return Dialog_ShowInline(playerid, callback, DIALOG_STYLE_MSGBOX, title, format, button1, button2, ___(6));
 }
 
-stock bool:Dialog_ShowInputInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
-    return Dialog_ShowInline(playerid, callback, DIALOG_STYLE_INPUT, title, body, button1, button2, ___(6));
+stock bool:Dialog_ShowInputInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
+    return Dialog_ShowInline(playerid, callback, DIALOG_STYLE_INPUT, title, format, button1, button2, ___(6));
 }
 
-stock bool:Dialog_ShowListInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
-    return Dialog_ShowInline(playerid, callback, DIALOG_STYLE_LIST, title, body, button1, button2, ___(6));
+stock bool:Dialog_ShowListInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
+    return Dialog_ShowInline(playerid, callback, DIALOG_STYLE_LIST, title, format, button1, button2, ___(6));
 }
 
-stock bool:Dialog_ShowPasswordInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
-    return Dialog_ShowInline(playerid, callback, DIALOG_STYLE_PASSWORD, title, body, button1, button2, ___(6));
+stock bool:Dialog_ShowPasswordInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
+    return Dialog_ShowInline(playerid, callback, DIALOG_STYLE_PASSWORD, title, format, button1, button2, ___(6));
 }
 
-stock bool:Dialog_ShowTabListInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
-    return Dialog_ShowInline(playerid, callback, DIALOG_STYLE_TABLIST, title, body, button1, button2, ___(6));
+stock bool:Dialog_ShowTabListInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
+    return Dialog_ShowInline(playerid, callback, DIALOG_STYLE_TABLIST, title, format, button1, button2, ___(6));
 }
 
-stock bool:Dialog_ShowTabListHeadersInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
-    return Dialog_ShowInline(playerid, callback, DIALOG_STYLE_TABLIST_HEADERS, title, body, button1, button2, ___(6));
+stock bool:Dialog_ShowTabListHeadersInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {
+    return Dialog_ShowInline(playerid, callback, DIALOG_STYLE_TABLIST_HEADERS, title, format, button1, button2, ___(6));
 }
 
-stock bool:Dialog_ShowPageInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const body[], const button1[], const button2[] = "", rows = SSI_DIALOG_PAGE_ROWS, OPEN_MP_TAGS:...) {
+stock bool:Dialog_ShowPageInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const format[], const button1[], const button2[] = "", rows = SSI_DIALOG_PAGE_ROWS, OPEN_MP_TAGS:...) {
     new const
         Inline:closure = callback
     ;
@@ -384,9 +388,9 @@ stock bool:Dialog_ShowPageInline(playerid, Inline:callback<iis>, DIALOG_STYLE:st
 
     if (numargs() == 8) {
         SSI@dialogPageBody[0] = EOS;
-        strcat(SSI@dialogPageBody, body);
+        strcat(SSI@dialogPageBody, format);
     } else {
-        Format(SSI@dialogPageBody, sizeof (SSI@dialogPageBody), body, ___(8));
+        Format(SSI@dialogPageBody, sizeof (SSI@dialogPageBody), format, ___(8));
     }
 
     strpack(SSI@dialogPage[playerid][E_DIALOG_PAGE_BODY], SSI@dialogPageBody, SSI_DIALOG_PAGE_BODY char);
@@ -469,7 +473,7 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
     ;
 
     if (response && next && listitem == count) {
-        ++SSI@dialogPage[playerid][E_DIALOG_PAGE_PAGE];
+        SSI@dialogPage[playerid][E_DIALOG_PAGE_PAGE] += 1;
         SSI@dialogPage[playerid][E_DIALOG_PAGE_START] = SSI@dialogPage[playerid][E_DIALOG_PAGE_END];
         SSI_DialogPageShowInternal(playerid);
 
@@ -477,7 +481,7 @@ hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
     }
 
     if (response && current > 0 && listitem == count + _:next) {
-        --SSI@dialogPage[playerid][E_DIALOG_PAGE_PAGE];
+        SSI@dialogPage[playerid][E_DIALOG_PAGE_PAGE] -= 1;
         SSI@dialogPage[playerid][E_DIALOG_PAGE_START] = SSI_DialogPageBackInternal(playerid, SSI@dialogPage[playerid][E_DIALOG_PAGE_BODY]);
         SSI_DialogPageShowInternal(playerid);
 
