@@ -267,7 +267,11 @@ stock bool:SSI@PTask_Start(TimerTask:slot, timers[MAX_PLAYERS], playerid) {
 }
 
 stock bool:SSI@PTask_Stop(timers[MAX_PLAYERS], playerid) {
-    if (playerid < 0 || playerid >= MAX_PLAYERS) {
+    if (playerid < 0) {
+        return false;
+    }
+
+    if (playerid >= MAX_PLAYERS) {
         return false;
     }
 
@@ -323,7 +327,11 @@ stock bool:SSI@PTask_Resume(TimerTask:slot, timers[MAX_PLAYERS]) {
 
 public @SSI_TaskSpread() {
     for (new TimerTask:slot; slot != SSI@taskCount; ++slot) {
-        if (SSI@task[slot][E_TASK_PER_PLAYER] || SSI@task[slot][E_TASK_PAUSED]) {
+        if (SSI@task[slot][E_TASK_PER_PLAYER]) {
+            continue;
+        }
+
+        if (SSI@task[slot][E_TASK_PAUSED]) {
             continue;
         }
 

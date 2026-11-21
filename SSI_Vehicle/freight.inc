@@ -344,7 +344,11 @@ stock AddVehicleFreight(vehicleid, modelid, slot = -1) {
         while (++slot != slots && gFreightData[vehicleid][E_FREIGHT_OBJECT][slot] != STREAMER_TAG_OBJECT:INVALID_STREAMER_ID) {}
     }
 
-    if (!(0 <= slot < slots) || gFreightData[vehicleid][E_FREIGHT_OBJECT][slot] != STREAMER_TAG_OBJECT:INVALID_STREAMER_ID) {
+    if (!(0 <= slot < slots)) {
+        return -1;
+    }
+
+    if (gFreightData[vehicleid][E_FREIGHT_OBJECT][slot] != STREAMER_TAG_OBJECT:INVALID_STREAMER_ID) {
         return -1;
     }
 
@@ -377,7 +381,11 @@ stock AddVehicleFreight(vehicleid, modelid, slot = -1) {
 }
 
 stock bool:RemoveVehicleFreight(vehicleid, slot) {
-    if (!(0 <= vehicleid < MAX_VEHICLES) || !(0 <= slot < MAX_FREIGHT_SLOTS)) {
+    if (!(0 <= vehicleid < MAX_VEHICLES)) {
+        return false;
+    }
+
+    if (!(0 <= slot < MAX_FREIGHT_SLOTS)) {
         return false;
     }
 
@@ -394,7 +402,11 @@ stock bool:RemoveVehicleFreight(vehicleid, slot) {
 }
 
 stock bool:ClearVehicleFreight(vehicleid) {
-    if (!(0 <= vehicleid < MAX_VEHICLES) || gFreightData[vehicleid][E_FREIGHT_COLUMNS] == 0) {
+    if (!(0 <= vehicleid < MAX_VEHICLES)) {
+        return false;
+    }
+
+    if (gFreightData[vehicleid][E_FREIGHT_COLUMNS] == 0) {
         return false;
     }
 
@@ -444,7 +456,11 @@ stock bool:GetVehicleFreightPos(vehicleid, slot, &Float:x, &Float:y, &Float:z) {
 }
 
 stock bool:SetVehicleFreightOpen(vehicleid, bool:open) {
-    if (!(0 <= vehicleid < MAX_VEHICLES) || gFreightData[vehicleid][E_FREIGHT_COLUMNS] == 0) {
+    if (!(0 <= vehicleid < MAX_VEHICLES)) {
+        return false;
+    }
+
+    if (gFreightData[vehicleid][E_FREIGHT_COLUMNS] == 0) {
         return false;
     }
 
@@ -467,7 +483,11 @@ stock bool:IsVehicleFreightOpen(vehicleid) {
 
 #if defined _INC_SSI_VEHICLE_FORKLIFT
     hook OnCrateLower(Crate:crateid, vehicleid, Float:x, Float:y, Float:z) {
-        if (Bits_Test(FreightRefused, crateid) || Collection_Count(FreightOpen) == 0) {
+        if (Bits_Test(FreightRefused, crateid)) {
+            return 0;
+        }
+
+        if (Collection_Count(FreightOpen) == 0) {
             return 0;
         }
 
