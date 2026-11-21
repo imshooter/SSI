@@ -24,7 +24,15 @@
  *     }
  *
  *     Place(playerid, STREAMER_TAG_OBJECT:objectid) {
- *         inline OnEdited(EDIT_RESPONSE:response, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz) {
+ *         inline OnEdited(
+ *             EDIT_RESPONSE:response,
+ *             Float:x,
+ *             Float:y,
+ *             Float:z,
+ *             Float:rx,
+ *             Float:ry,
+ *             Float:rz
+ *         ) {
  *             if (response != EDIT_RESPONSE_FINAL) {
  *                 @return;
  *             }

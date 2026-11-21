@@ -22,7 +22,14 @@
  *             SetPlayerName(playerid, inputtext);
  *         }
  *
- *         Dialog_ShowInputInline(playerid, using inline OnAnswer, "Name", "Your new name:", "Save", "Cancel");
+ *         Dialog_ShowInputInline(
+ *             playerid,
+ *             using inline OnAnswer,
+ *             "Name",
+ *             "Your new name:",
+ *             "Save",
+ *             "Cancel"
+ *         );
  *     }
  *
  * - The inline takes the response, the list item and the text, and is called

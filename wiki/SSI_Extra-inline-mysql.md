@@ -34,7 +34,11 @@ ShowAge(playerid, const name[]) {
         SendClientMessage(playerid, -1, "Registered %i days ago.", days);
     }
 
-    MySQL_ThreadedQueryInline(gDatabase, using inline OnFound, "SELECT DATEDIFF(NOW(), registered) AS days FROM accounts WHERE name = %q", name);
+    MySQL_ThreadedQueryInline(
+        gDatabase,
+        using inline OnFound,
+        "SELECT DATEDIFF(NOW(), registered) AS days FROM accounts WHERE name = %q", name
+    );
 }
 ```
 

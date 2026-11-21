@@ -43,7 +43,11 @@
  *             SendClientMessage(playerid, -1, "Registered %i days ago.", days);
  *         }
  *
- *         Postgres_QueryInline(gDatabase, using inline OnFound, "SELECT current_date - registered AS days FROM accounts WHERE name = %s", name);
+ *         Postgres_QueryInline(
+ *             gDatabase,
+ *             using inline OnFound,
+ *             "SELECT current_date - registered AS days FROM accounts WHERE name = %s", name
+ *         );
  *     }
  *
  * - A query is written as for `format`, and each specifier is a parameter

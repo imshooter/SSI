@@ -26,7 +26,14 @@ AskName(playerid) {
         SetPlayerName(playerid, inputtext);
     }
 
-    Dialog_ShowInputInline(playerid, using inline OnAnswer, "Name", "Your new name:", "Save", "Cancel");
+    Dialog_ShowInputInline(
+        playerid,
+        using inline OnAnswer,
+        "Name",
+        "Your new name:",
+        "Save",
+        "Cancel"
+    );
 }
 ```
 

@@ -63,7 +63,15 @@ static
     Inline:gDialog[MAX_PLAYERS] = { INVALID_INLINE, ... }
 ;
 
-stock Dialog_ShowInline(playerid, Inline:callback<iis>, style, const title[], const body[], const button1[], const button2[] = "") {
+stock Dialog_ShowInline(
+    playerid,
+    Inline:callback<iis>,
+    style,
+    const title[],
+    const body[],
+    const button1[],
+    const button2[] = ""
+) {
     Inline_Free(gDialog[playerid]);
     gDialog[playerid] = callback;
 
