@@ -7,7 +7,6 @@
 #include <streamer>
 #include <SSI_Vehicle\math>
 #include <SSI\collection>
-#include <SSI\dictionary>
 
 #if defined SPEED_CAMERA_FLASH
     #include <SSI\inline>
@@ -48,6 +47,10 @@
     #define MAX_SPEED_CAMERAS (SpeedCamera:256)
 #endif
 
+#if !defined SPEED_CAMERA_STREAMER_IDENTIFIER
+    #define SPEED_CAMERA_STREAMER_IDENTIFIER (0x73636D)
+#endif
+
 #if !defined SPEED_CAMERA_MODEL
     #define SPEED_CAMERA_MODEL (18880)
 #endif
@@ -83,7 +86,6 @@ new
 
 static
     gSpeedCameraData[MAX_SPEED_CAMERAS][E_SPEED_CAMERA_DATA],
-    Dictionary:SpeedCameraByArea<MAX_SPEED_CAMERAS>,
     Float:gSpeedCameraMultiplier = VEHICLE_SPEED_MULTIPLIER
 ;
 
@@ -228,7 +230,7 @@ stock SpeedCamera:CreateSpeedCamera(Float:x, Float:y, Float:z, Float:angle, Floa
     gSpeedCameraData[cameraid][E_SPEED_CAMERA_OBJECT] = CreateDynamicObject(modelid, x, y, z, 0.0, 0.0, angle, worldid, interiorid);
     gSpeedCameraData[cameraid][E_SPEED_CAMERA_AREA] = CreateDynamicSphere(x, y, z, range, worldid, interiorid);
 
-    Dictionary_Set(SpeedCameraByArea, _:gSpeedCameraData[cameraid][E_SPEED_CAMERA_AREA], _:cameraid);
+    Streamer_SetIntData(STREAMER_TYPE_AREA, gSpeedCameraData[cameraid][E_SPEED_CAMERA_AREA], E_STREAMER_CUSTOM(SPEED_CAMERA_STREAMER_IDENTIFIER), _:cameraid);
 
     return cameraid;
 }
@@ -238,7 +240,6 @@ stock bool:DestroySpeedCamera(SpeedCamera:cameraid) {
         return false;
     }
 
-    Dictionary_Remove(SpeedCameraByArea, _:gSpeedCameraData[cameraid][E_SPEED_CAMERA_AREA]);
     DestroyDynamicArea(gSpeedCameraData[cameraid][E_SPEED_CAMERA_AREA]);
     DestroyDynamicObject(gSpeedCameraData[cameraid][E_SPEED_CAMERA_OBJECT]);
     Collection_Remove(SpeedCamera, cameraid);
@@ -293,13 +294,13 @@ stock Float:GetSpeedCameraMultiplier() {
  */
 
 hook OnPlayerEnterDynamicArea(playerid, STREAMER_TAG_AREA:areaid) {
-    new
-        SpeedCamera:cameraid
-    ;
-
-    if (!Dictionary_Get(SpeedCameraByArea, _:areaid, cameraid)) {
+    if (!Streamer_HasIntData(STREAMER_TYPE_AREA, areaid, E_STREAMER_CUSTOM(SPEED_CAMERA_STREAMER_IDENTIFIER))) {
         return 1;
     }
+
+    new const
+        SpeedCamera:cameraid = SpeedCamera:Streamer_GetIntData(STREAMER_TYPE_AREA, areaid, E_STREAMER_CUSTOM(SPEED_CAMERA_STREAMER_IDENTIFIER))
+    ;
 
     if (GetPlayerState(playerid) != PLAYER_STATE_DRIVER) {
         return 1;
