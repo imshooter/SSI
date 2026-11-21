@@ -840,7 +840,7 @@ stock SSI@Inline_FreeOwned(owner, tag) {
 }
 
 /**
- * # Inline
+ * # External
  */
 
 stock Inline:operator=(InlineSite:site) {

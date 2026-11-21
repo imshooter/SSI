@@ -179,7 +179,7 @@ static stock SSI_TaskStartInternal(TimerTask:slot, delay) {
 }
 
 /**
- * # Task
+ * # External
  */
 
 stock TimerTask:SSI@Task_Add(const name[], interval, bool:perPlayer) {
@@ -243,10 +243,6 @@ stock bool:SSI@Task_Resume(TimerTask:slot) {
 
     return true;
 }
-
-/**
- * # Player Task
- */
 
 stock bool:SSI@PTask_Start(TimerTask:slot, timers[MAX_PLAYERS], playerid) {
     if (!SSI_TaskIsPerPlayerInternal(slot)) {

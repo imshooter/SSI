@@ -228,22 +228,6 @@ forward bool:Extra_Name(Extra:extra<>, column, name[]);
 event OnExtraInit();
 
 /**
- * # Declaration
- */
-
-#undef Extra
-
-/**
- * Declares the extra tagged `%0`, `Name<IDS, CELLS>`, static when the
- * declaration is.
- *
- *     static
- *         Extra:VehicleExtra<MAX_VEHICLES, 8>
- *     ;
- */
-#define Extra:%0<%1,%2> %0@SSI_data[_:(%1)][(%2)], %0@SSI_default[(%2)], E_EXTRA_TYPE:%0@SSI_type[(%2)], %0@SSI_size[(%2)], %0@SSI_name[(%2)][SSI_EXTRA_NAME + 1], %0@SSI_used
-
-/**
  * # Internal
  */
 
@@ -362,6 +346,22 @@ stock bool:SSI@Extra_Name(const names[][], used, column, name[], size = sizeof (
 
     return name[0] != EOS;
 }
+
+/**
+ * # External
+ */
+
+#undef Extra
+
+/**
+ * Declares the extra tagged `%0`, `Name<IDS, CELLS>`, static when the
+ * declaration is.
+ *
+ *     static
+ *         Extra:VehicleExtra<MAX_VEHICLES, 8>
+ *     ;
+ */
+#define Extra:%0<%1,%2> %0@SSI_data[_:(%1)][(%2)], %0@SSI_default[(%2)], E_EXTRA_TYPE:%0@SSI_type[(%2)], %0@SSI_size[(%2)], %0@SSI_name[(%2)][SSI_EXTRA_NAME + 1], %0@SSI_used
 
 /**
  * # Calls

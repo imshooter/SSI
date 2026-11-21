@@ -278,7 +278,7 @@ static stock ResetFreightInternal(vehicleid) {
 }
 
 /**
- * # Freight
+ * # External
  */
 
 stock bool:SetVehicleFreight(vehicleid, columns, rows, Float:x, Float:y, Float:floor, Float:columnGap, Float:rowGap, FREIGHT_SIDE:sides = FREIGHT_SIDE_BACK, bool:bed = false) {

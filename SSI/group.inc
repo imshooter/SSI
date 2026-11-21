@@ -402,7 +402,7 @@ static stock SSI@Group_Rebuild() {
 }
 
 /**
- * # Group
+ * # External
  */
 
 stock Group:Group_Create(const name[]) {
@@ -504,10 +504,6 @@ stock Group:Group_GetParent(Group:groupid) {
 
     return gGroupData[groupid][E_GROUP_PARENT];
 }
-
-/**
- * # Members
- */
 
 stock bool:Group_AddPlayer(Group:groupid, playerid) {
     if (!Group_IsValid(groupid)) {

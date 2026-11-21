@@ -159,7 +159,7 @@ forward bool:GetVehicleBootPos(vehicleid, &Float:x, &Float:y, &Float:z, Float:ma
 forward bool:GetVehicleWheelPos(vehicleid, VEHICLE_CORNER:wheel, &Float:x, &Float:y, &Float:z);
 
 /**
- * # Speed
+ * # External
  */
 
 stock Float:GetVehicleSpeed(vehicleid, Float:multiplier = VEHICLE_SPEED_MULTIPLIER) {
@@ -176,10 +176,6 @@ stock Float:GetVehicleSpeed(vehicleid, Float:multiplier = VEHICLE_SPEED_MULTIPLI
     return VectorSize(vx, vy, vz) * multiplier;
 }
 
-/**
- * # Orientation
- */
-
 stock bool:IsVehicleUpsideDown(vehicleid) {
     new
         Float:unused,
@@ -192,10 +188,6 @@ stock bool:IsVehicleUpsideDown(vehicleid) {
 
     return upZ < 0.0;
 }
-
-/**
- * # Positions
- */
 
 stock bool:GetVehicleOffsetPos(vehicleid, Float:offsetX, Float:offsetY, Float:offsetZ, &Float:x, &Float:y, &Float:z) {
     new

@@ -300,7 +300,7 @@ static stock SSI_DialogPageBackInternal(playerid, const body[]) {
 }
 
 /**
- * # Dialog
+ * # External
  */
 
 stock bool:Dialog_ShowInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...) {

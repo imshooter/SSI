@@ -161,7 +161,7 @@ static stock SSI_ObjectPlayerEndInternal(playerid) {
 }
 
 /**
- * # Object
+ * # External
  */
 
 stock DynamicObject_MoveInline(STREAMER_TAG_OBJECT:objectid, Float:x, Float:y, Float:z, Float:speed, Inline:callback<>, Float:rx = -1000.0, Float:ry = -1000.0, Float:rz = -1000.0) {

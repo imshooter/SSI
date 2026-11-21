@@ -106,148 +106,6 @@ new
 #endif
 
 /**
- * # Iterator Functions
- */
-
-/**
- * @brief      Walk the numbers from `0` up to `count`, `count` left out.
- *
- *     foreach (new i : N(6)) {
- *     }
- *
- * @param      count  How many numbers.
- */
-#define N@SSI_loop|||%9|||%1|||(%3)||| %9%1=%9(0);_:%1<_:(%3);%1++
-
-/**
- * @brief      Walk the numbers from `min` towards `max`, `max` left out.
- *
- *     foreach (new i : Range(10, 100, 2)) {
- *     }
- *
- * @param      min   The first number.
- * @param      max   The number the walk stops at.
- * @param      step  What is added each time, negative to count down, or `1`
- *                   when left out. A step of `0` never ends the walk.
- */
-#define Range@SSI_loop|||%9|||%1|||(%3)||| SSI_RANGE|||%9|||%1|||(%3,1,)|||
-#define SSI_RANGE|||%9|||%1|||(%0,%2,%4,%5)||| %9%1=%9(%0),SSI@state%1=_:((%4)>0);SSI@state%1?(_:%1<(%2)):(_:%1>(%2));%1+=%9(%4)
-
-/**
- * @brief      Walk the powers of `base` that fit in a cell, from `1`.
- *
- *     foreach (new i : Powers(3)) {
- *     }
- *
- * @param      base  The number raised.
- */
-#define Powers@SSI_loop|||%9|||%1|||(%3)||| %9%1=%9(1);_:%1!=0;%1=%9(SSI@Powers((_:%1),%3))
-
-/**
- * @brief      Walk the Fibonacci numbers that fit in a cell, from `0`.
- *
- *     foreach (new i : Fib()) {
- *     }
- */
-#define Fib@SSI_loop|||%9|||%1|||()||| %9%1=%9(0),SSI@state%1=1;_:%1>=0;SSI@state%1+=_:%1,%1=%9(SSI@state%1-_:%1)
-
-/**
- * @brief      Walk `count` random numbers.
- *
- * With one number after `count`, the numbers range from `0` up to that
- * number, which is left out. With two, they range from the first up to the
- * second, which is left out.
- *
- *     foreach (new i : Random(12, 10)) {
- *     }
- *
- * @param      count  How many numbers.
- * @param      min    The lowest number, or with no `max` the number they stay
- *                    under.
- * @param      max    The number they stay under.
- */
-#define Random@SSI_loop|||%9|||%1|||(%3)||| SSI_RANDOM|||%9|||%1|||(%3)|||(%3,)|||
-#define SSI_RANDOM|||%9|||%1|||(%3)|||(%0,%2)||| %9%1=%9(0),SSI@state%1=0;SSI@state%1++<(%0)&&((%1=%9(SSI@Random(%3))),true);
-
-/**
- * @brief      Walk the indexes of an array that hold `0`.
- *
- *     foreach (new i : Null(array)) {
- *     }
- *
- * @param      array  The array.
- * @param      size   How many of its cells to walk, or all of them when left
- *                    out.
- */
-#define Null@SSI_loop|||%9|||%1|||(%3)||| SSI_SEARCH|||SSI@Null|||%9|||%1|||(%3)|||
-
-/**
- * @brief      Walk the indexes of an array that hold anything but `0`.
- *
- * @param      array  The array.
- * @param      size   How many of its cells to walk, or all of them when left
- *                    out.
- */
-#define NonNull@SSI_loop|||%9|||%1|||(%3)||| SSI_SEARCH|||SSI@NonNull|||%9|||%1|||(%3)|||
-
-/**
- * @brief      Walk the indexes of an array up to the first that holds `value`,
- *             which is left out.
- *
- *     foreach (new i : Until(5, array)) {
- *     }
- *
- * @param      value  The value the walk stops at.
- * @param      array  The array.
- * @param      size   How many of its cells to walk, or all of them when left
- *                    out.
- */
-#define Until@SSI_loop|||%9|||%1|||(%3)||| SSI_SEARCH|||SSI@Until|||%9|||%1|||(%3)|||
-
-/**
- * @brief      Walk the indexes of an array that hold `value`.
- *
- * @param      value  The value looked for.
- * @param      array  The array.
- * @param      size   How many of its cells to walk, or all of them when left
- *                    out.
- */
-#define Filter@SSI_loop|||%9|||%1|||(%3)||| SSI_SEARCH|||SSI@Filter|||%9|||%1|||(%3)|||
-
-#define SSI_SEARCH|||%8|||%9|||%1|||(%3)||| %9%1=%9(-1);_:(%1=%9(%8((_:%1),%3)))!=-1;
-
-/**
- * @brief      Walk the players in a vehicle, seat by seat from the driver, or
- *             the players in any vehicle.
- *
- * A player who leaves the vehicle inside the loop does not stop the walk.
- *
- *     foreach (new playerid : VehicleOccupant(vehicleid)) {
- *     }
- *
- * @param      vehicleid  The vehicle, or every vehicle when left out.
- * @param      driver     Whether the driver is walked.
- * @param      passenger  Whether the passengers are walked.
- */
-#define VehicleOccupant@SSI_loop|||%9|||%1|||(%3)||| SSI_OCCUPANT|||SSI@VehicleOccupant|||%9|||%1|||(%3)|||
-
-/**
- * @brief      Walk the driver of a vehicle, or the drivers of every vehicle.
- *
- * @param      vehicleid  The vehicle, or every vehicle when left out.
- */
-#define VehicleDriver@SSI_loop|||%9|||%1|||(%3)||| SSI_OCCUPANT|||SSI@VehicleDriver|||%9|||%1|||(%3)|||
-
-/**
- * @brief      Walk the passengers of a vehicle, or of every vehicle.
- *
- * @param      vehicleid  The vehicle, or every vehicle when left out.
- */
-#define VehiclePassenger@SSI_loop|||%9|||%1|||(%3)||| SSI_OCCUPANT|||SSI@VehiclePassenger|||%9|||%1|||(%3)|||
-
-#define SSI_OCCUPANT|||%8|||%9|||%1|||(%3)||| %9%1,SSI@state%1=-1;(SSI@carry=SSI@state%1,%1=%9(%8(%3)),SSI@state%1=SSI@carry,_:%1)!=INVALID_PLAYER_ID;
-
-/**
  * # Internal
  */
 
@@ -509,6 +367,148 @@ stock SSI@VehicleDriver(vehicleid = INVALID_VEHICLE_ID) {
 stock SSI@VehiclePassenger(vehicleid = INVALID_VEHICLE_ID) {
     return SSI@VehicleOccupant(vehicleid, false, true);
 }
+
+/**
+ * # External
+ */
+
+/**
+ * @brief      Walk the numbers from `0` up to `count`, `count` left out.
+ *
+ *     foreach (new i : N(6)) {
+ *     }
+ *
+ * @param      count  How many numbers.
+ */
+#define N@SSI_loop|||%9|||%1|||(%3)||| %9%1=%9(0);_:%1<_:(%3);%1++
+
+/**
+ * @brief      Walk the numbers from `min` towards `max`, `max` left out.
+ *
+ *     foreach (new i : Range(10, 100, 2)) {
+ *     }
+ *
+ * @param      min   The first number.
+ * @param      max   The number the walk stops at.
+ * @param      step  What is added each time, negative to count down, or `1`
+ *                   when left out. A step of `0` never ends the walk.
+ */
+#define Range@SSI_loop|||%9|||%1|||(%3)||| SSI_RANGE|||%9|||%1|||(%3,1,)|||
+#define SSI_RANGE|||%9|||%1|||(%0,%2,%4,%5)||| %9%1=%9(%0),SSI@state%1=_:((%4)>0);SSI@state%1?(_:%1<(%2)):(_:%1>(%2));%1+=%9(%4)
+
+/**
+ * @brief      Walk the powers of `base` that fit in a cell, from `1`.
+ *
+ *     foreach (new i : Powers(3)) {
+ *     }
+ *
+ * @param      base  The number raised.
+ */
+#define Powers@SSI_loop|||%9|||%1|||(%3)||| %9%1=%9(1);_:%1!=0;%1=%9(SSI@Powers((_:%1),%3))
+
+/**
+ * @brief      Walk the Fibonacci numbers that fit in a cell, from `0`.
+ *
+ *     foreach (new i : Fib()) {
+ *     }
+ */
+#define Fib@SSI_loop|||%9|||%1|||()||| %9%1=%9(0),SSI@state%1=1;_:%1>=0;SSI@state%1+=_:%1,%1=%9(SSI@state%1-_:%1)
+
+/**
+ * @brief      Walk `count` random numbers.
+ *
+ * With one number after `count`, the numbers range from `0` up to that
+ * number, which is left out. With two, they range from the first up to the
+ * second, which is left out.
+ *
+ *     foreach (new i : Random(12, 10)) {
+ *     }
+ *
+ * @param      count  How many numbers.
+ * @param      min    The lowest number, or with no `max` the number they stay
+ *                    under.
+ * @param      max    The number they stay under.
+ */
+#define Random@SSI_loop|||%9|||%1|||(%3)||| SSI_RANDOM|||%9|||%1|||(%3)|||(%3,)|||
+#define SSI_RANDOM|||%9|||%1|||(%3)|||(%0,%2)||| %9%1=%9(0),SSI@state%1=0;SSI@state%1++<(%0)&&((%1=%9(SSI@Random(%3))),true);
+
+/**
+ * @brief      Walk the indexes of an array that hold `0`.
+ *
+ *     foreach (new i : Null(array)) {
+ *     }
+ *
+ * @param      array  The array.
+ * @param      size   How many of its cells to walk, or all of them when left
+ *                    out.
+ */
+#define Null@SSI_loop|||%9|||%1|||(%3)||| SSI_SEARCH|||SSI@Null|||%9|||%1|||(%3)|||
+
+/**
+ * @brief      Walk the indexes of an array that hold anything but `0`.
+ *
+ * @param      array  The array.
+ * @param      size   How many of its cells to walk, or all of them when left
+ *                    out.
+ */
+#define NonNull@SSI_loop|||%9|||%1|||(%3)||| SSI_SEARCH|||SSI@NonNull|||%9|||%1|||(%3)|||
+
+/**
+ * @brief      Walk the indexes of an array up to the first that holds `value`,
+ *             which is left out.
+ *
+ *     foreach (new i : Until(5, array)) {
+ *     }
+ *
+ * @param      value  The value the walk stops at.
+ * @param      array  The array.
+ * @param      size   How many of its cells to walk, or all of them when left
+ *                    out.
+ */
+#define Until@SSI_loop|||%9|||%1|||(%3)||| SSI_SEARCH|||SSI@Until|||%9|||%1|||(%3)|||
+
+/**
+ * @brief      Walk the indexes of an array that hold `value`.
+ *
+ * @param      value  The value looked for.
+ * @param      array  The array.
+ * @param      size   How many of its cells to walk, or all of them when left
+ *                    out.
+ */
+#define Filter@SSI_loop|||%9|||%1|||(%3)||| SSI_SEARCH|||SSI@Filter|||%9|||%1|||(%3)|||
+
+#define SSI_SEARCH|||%8|||%9|||%1|||(%3)||| %9%1=%9(-1);_:(%1=%9(%8((_:%1),%3)))!=-1;
+
+/**
+ * @brief      Walk the players in a vehicle, seat by seat from the driver, or
+ *             the players in any vehicle.
+ *
+ * A player who leaves the vehicle inside the loop does not stop the walk.
+ *
+ *     foreach (new playerid : VehicleOccupant(vehicleid)) {
+ *     }
+ *
+ * @param      vehicleid  The vehicle, or every vehicle when left out.
+ * @param      driver     Whether the driver is walked.
+ * @param      passenger  Whether the passengers are walked.
+ */
+#define VehicleOccupant@SSI_loop|||%9|||%1|||(%3)||| SSI_OCCUPANT|||SSI@VehicleOccupant|||%9|||%1|||(%3)|||
+
+/**
+ * @brief      Walk the driver of a vehicle, or the drivers of every vehicle.
+ *
+ * @param      vehicleid  The vehicle, or every vehicle when left out.
+ */
+#define VehicleDriver@SSI_loop|||%9|||%1|||(%3)||| SSI_OCCUPANT|||SSI@VehicleDriver|||%9|||%1|||(%3)|||
+
+/**
+ * @brief      Walk the passengers of a vehicle, or of every vehicle.
+ *
+ * @param      vehicleid  The vehicle, or every vehicle when left out.
+ */
+#define VehiclePassenger@SSI_loop|||%9|||%1|||(%3)||| SSI_OCCUPANT|||SSI@VehiclePassenger|||%9|||%1|||(%3)|||
+
+#define SSI_OCCUPANT|||%8|||%9|||%1|||(%3)||| %9%1,SSI@state%1=-1;(SSI@carry=SSI@state%1,%1=%9(%8(%3)),SSI@state%1=SSI@carry,_:%1)!=INVALID_PLAYER_ID;
 
 /**
  * # Calls

@@ -699,7 +699,7 @@ forward bool:CanVehicleModelHaveComponent(modelid, componentid);
 forward GetVehicleComponentPrimary(componentid);
 
 /**
- * # Component
+ * # External
  */
 
 stock bool:IsValidVehicleModel(modelid) {

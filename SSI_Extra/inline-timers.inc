@@ -141,7 +141,7 @@ static stock SSI_TimerEndInternal(TimerSlot:slot) {
 }
 
 /**
- * # Timer
+ * # External
  */
 
 stock Timer:Timer_StartInline(Inline:callback<>, interval, count = 0, delay = -1) {

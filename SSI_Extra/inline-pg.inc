@@ -795,7 +795,7 @@ static stock SSI_PostgresFailedInternal(connection, job, error) {
 }
 
 /**
- * # Postgres
+ * # External
  */
 
 stock Postgres_Connect(const profile[], pool = 1) {

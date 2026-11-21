@@ -185,7 +185,7 @@ stock SSI@Bits_Next(previous, const bits[], size = sizeof (bits)) {
 }
 
 /**
- * # Bits
+ * # External
  */
 
 stock Bits_Clear(bits[], size = sizeof (bits)) {

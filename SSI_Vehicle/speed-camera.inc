@@ -209,7 +209,7 @@ event OnPlayerTriggerSpeedCamera(playerid, SpeedCamera:cameraid, Float:speed, Fl
 event OnPlayerTriggeredSpeedCamera(playerid, SpeedCamera:cameraid, Float:speed, Float:limit);
 
 /**
- * # Speed Camera
+ * # External
  */
 
 stock SpeedCamera:CreateSpeedCamera(Float:x, Float:y, Float:z, Float:angle, Float:limit, Float:range = SPEED_CAMERA_RANGE, modelid = SPEED_CAMERA_MODEL, worldid = -1, interiorid = -1) {

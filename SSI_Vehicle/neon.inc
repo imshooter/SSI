@@ -128,7 +128,7 @@ static stock SetVehicleNeonDataInternal(vehicleid, data, value) {
 }
 
 /**
- * # Neon
+ * # External
  */
 
 stock bool:SetVehicleNeon(vehicleid, VEHICLE_NEON:neon) {

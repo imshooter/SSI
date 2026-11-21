@@ -81,7 +81,7 @@ forward @SSI_BCryptHashed(playerid, Inline:closure);
 forward @SSI_BCryptChecked(playerid, bool:match, Inline:closure);
 
 /**
- * # BCrypt
+ * # External
  */
 
 stock bool:BCrypt_HashInline(Inline:callback<s>, const input[], cost = BCRYPT_COST) {

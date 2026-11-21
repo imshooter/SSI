@@ -148,7 +148,7 @@ static stock ShowObjectiveIconInternal(playerid) {
 }
 
 /**
- * # Vehicle Objective
+ * # External
  */
 
 stock bool:SetPlayerObjectiveVehicle(playerid, vehicleid) {

@@ -113,7 +113,7 @@ forward bool:Queue_IsEmpty(Queue:queue<>);
 #define Queue_IsEmpty(%0) (%0@SSI_head == %0@SSI_tail)
 
 /**
- * # Declaration
+ * # External
  */
 
 #undef Queue

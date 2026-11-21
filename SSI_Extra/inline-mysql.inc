@@ -217,7 +217,7 @@ forward @SSI_MySQLHashed(Inline:closure, const hash[]);
 forward @SSI_MySQLVerified(Inline:closure, bool:match);
 
 /**
- * # MySQL
+ * # External
  */
 
 stock bool:MySQL_ThreadedQueryInline(MySQL:handle, Inline:callback<i>, const query[], MYSQL_TAGS:...) {
@@ -309,10 +309,6 @@ stock bool:MySQL_ExecuteBatchInline(Batch:batch, Inline:callback<i>) {
 
     return false;
 }
-
-/**
- * # Passwords
- */
 
 stock bool:MySQL_HashArgon2Inline(Inline:callback<s>, const password[], memory = MYSQL_ARGON2_MEMORY, iterations = MYSQL_ARGON2_ITERATIONS, parallelism = MYSQL_ARGON2_PARALLELISM) {
     new const

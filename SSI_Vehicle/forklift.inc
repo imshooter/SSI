@@ -853,7 +853,7 @@ static stock StopDrivingInternal(playerid) {
 }
 
 /**
- * # Crate
+ * # External
  */
 
 static stock Crate:AllocCrateInternal(modelid, worldid, interiorid) {

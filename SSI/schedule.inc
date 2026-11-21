@@ -123,49 +123,6 @@ forward Schedule_Clear(Schedule:schedule<>);
 #define Schedule_Clear(%0) SSI@Schedule_Clear(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_free[0], %0@SSI_tick, sizeof %0@SSI_group)
 
 /**
- * # Iterator Functions
- */
-
-/**
- * @brief      Walk the ids due at `now`, taking each out.
- *
- * Earlier units come first, and the ids of one unit come in any order. An id
- * given a time that the walks have already passed comes with the next unit. An
- * id set again inside the loop to a time not after `now` comes back in the
- * same walk. A `break` leaves the remaining ids in.
- *
- *     foreach (new playerid : Due(JailRelease, gettime())) {
- *     }
- *
- * @param      schedule  The schedule, named by its tag.
- * @param      now       The current time, read once before the walk.
- */
-#define Due@SSI_loop|||%9|||%1|||(%0,%2)||| %9%1,SSI@state%1=_:(%2);_:(%1=%9(SSI@Schedule_Due(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_time, %0@SSI_tick, sizeof %0@SSI_group, SSI@state%1)))!=-1;
-
-/**
- * # Declaration
- */
-
-#undef Schedule
-
-/**
- * Declares the schedule tagged `%0`, for the ids from `0` to `%1 - 1`, static
- * when the declaration is. It is a wheel: the group layout of collections with
- * one group for each slot, the slot of an id being its time masked by the
- * slots. `time` holds the time of each id, and `tick` the last unit walked,
- * the id the walk of the next slot goes on from, the count, and the time that
- * id was passed over at.
- *
- *     static
- *         Schedule:JailRelease<MAX_PLAYERS>
- *     ;
- */
-#define Schedule:%0<%1> \
-    SSI_GroupPool_Declare(%0,SSI_SCHEDULE_SLOTS,%1), \
-    %0@SSI_time[_:(%1)], \
-    %0@SSI_tick[4] = { 0, -1, 0, 0 }
-
-/**
  * # Internal
  */
 
@@ -406,3 +363,42 @@ stock SSI@Schedule_Clear(next[], prev[], group[], count[], &free, tick[], size) 
     tick[1] = -1;
     tick[2] = 0;
 }
+
+/**
+ * # External
+ */
+
+#undef Schedule
+
+/**
+ * Declares the schedule tagged `%0`, for the ids from `0` to `%1 - 1`, static
+ * when the declaration is. It is a wheel: the group layout of collections with
+ * one group for each slot, the slot of an id being its time masked by the
+ * slots. `time` holds the time of each id, and `tick` the last unit walked,
+ * the id the walk of the next slot goes on from, the count, and the time that
+ * id was passed over at.
+ *
+ *     static
+ *         Schedule:JailRelease<MAX_PLAYERS>
+ *     ;
+ */
+#define Schedule:%0<%1> \
+    SSI_GroupPool_Declare(%0,SSI_SCHEDULE_SLOTS,%1), \
+    %0@SSI_time[_:(%1)], \
+    %0@SSI_tick[4] = { 0, -1, 0, 0 }
+
+/**
+ * @brief      Walk the ids due at `now`, taking each out.
+ *
+ * Earlier units come first, and the ids of one unit come in any order. An id
+ * given a time that the walks have already passed comes with the next unit. An
+ * id set again inside the loop to a time not after `now` comes back in the
+ * same walk. A `break` leaves the remaining ids in.
+ *
+ *     foreach (new playerid : Due(JailRelease, gettime())) {
+ *     }
+ *
+ * @param      schedule  The schedule, named by its tag.
+ * @param      now       The current time, read once before the walk.
+ */
+#define Due@SSI_loop|||%9|||%1|||(%0,%2)||| %9%1,SSI@state%1=_:(%2);_:(%1=%9(SSI@Schedule_Due(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_time, %0@SSI_tick, sizeof %0@SSI_group, SSI@state%1)))!=-1;

@@ -246,7 +246,7 @@ forward GetVehiclePanelDamage(vehicleid, VEHICLE_PANEL:panel);
 forward bool:SetVehiclePanelDamage(vehicleid, VEHICLE_PANEL:panel, damage);
 
 /**
- * # Params
+ * # External
  */
 
 stock bool:SetVehicleParamsState(vehicleid, VEHICLE_PARAM:params, value) {
@@ -284,10 +284,6 @@ stock GetVehicleParamState(vehicleid, VEHICLE_PARAM:param) {
 
     return VEHICLE_PARAMS_UNSET;
 }
-
-/**
- * # Doors and windows
- */
 
 stock bool:SetVehicleDoorOpen(vehicleid, VEHICLE_CORNER:door, bool:open) {
     new
@@ -340,10 +336,6 @@ stock bool:IsVehicleWindowOpen(vehicleid, VEHICLE_CORNER:window) {
 
     return windows[window] == 0;
 }
-
-/**
- * # Damage
- */
 
 stock bool:SetVehicleTyrePopped(vehicleid, VEHICLE_CORNER:tyre, bool:popped) {
     new

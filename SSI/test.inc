@@ -542,7 +542,7 @@ static stock SSI_TestRunInternal() {
 }
 
 /**
- * # Checks
+ * # External
  */
 
 stock SSI@Test_Check(bool:ok, line, const text[]) {
@@ -692,10 +692,6 @@ stock SSI@Test_Log(const want[], line, const text[], count = sizeof (want)) {
 
     SSI@testLogCount = 0;
 }
-
-/**
- * # Tests
- */
 
 stock Test_Log(value) {
     if (SSI@testLogCount < SSI_TEST_LOG) {

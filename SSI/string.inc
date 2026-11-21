@@ -362,7 +362,7 @@ static stock SSI@String_HexDigit(character) {
 }
 
 /**
- * # String
+ * # External
  */
 
 stock String_Hash(const string[], bool:ignorecase = false) {

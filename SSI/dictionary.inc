@@ -174,89 +174,6 @@ forward Dictionary_Value(Dictionary:dictionary<>, entry);
 #define SSI_DICTIONARY_BY|||%0|||%3|||(%4) SSI_KeyMap_%3(%0%4)
 
 /**
- * # Declaration
- */
-
-#undef Dictionary
-
-/**
- * Declares the dictionary tagged `%0`, `Name<SIZE>` with number keys or
- * `Name<SIZE, LENGTH>` with text keys, static when the declaration is.
- *
- *     static
- *         Dictionary:Expiry<MAX_EXPIRY_BUCKETS>,
- *         Dictionary:Command<MAX_COMMANDS, MAX_COMMAND_LENGTH>
- *     ;
- */
-#define Dictionary:%0<%1> SSI_DICTIONARY_DECLARE_A:%0|||%1,,|||
-
-#define SSI_DICTIONARY_DECLARE_A:%0|||%1,%4,%5||| SSI_DICTIONARY_DECLARE_B%5X|||%0|||%1|||%4|||
-#define SSI_DICTIONARY_DECLARE_BX|||%0|||%1|||%4||| SSI_KeyMap_Declare(%0,%1)
-#define SSI_DICTIONARY_DECLARE_B,X|||%0|||%1|||%4||| SSI_StringMap_Declare(%0,%1,%4)
-
-/**
- * # Number Keys
- */
-
-/**
- * `Name<SIZE>` keeps its keys in a table with twice as many slots as its
- * capacity. A slot holds the entry of a key, or `-1`. A key starts at the slot
- * its hash points to and takes the next empty one. Removing a key pulls back
- * the keys after it that belong before the hole, so no slot is ever left marked
- * and a search stops at the first empty slot. The entries, which hold the key
- * and the value, form a handle pool: an entry keeps its id while it lives, and
- * `foreach` walks them.
- */
-#define SSI_KeyMap_Declare(%0,%1) \
-    %0@SSI_slot[_:(%1) * 2] = { -1, ... }, \
-    %0@SSI_key[_:(%1)], \
-    %0@SSI_value[_:(%1)], \
-    %0@SSI_next[_:(%1) + 1] = { _:(%1), ... }, \
-    %0@SSI_prev[_:(%1) + 1] = { _:(%1) * 2, _:(%1) * 2 - 1, ... }, \
-    %0@SSI_count, \
-    %0@SSI_free
-
-#define SSI_KeyMap_Set(%0,%1,%2) SSI@KeyMap_Set(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, %0@SSI_slot, %0@SSI_key, %0@SSI_value, sizeof %0@SSI_slot, sizeof %0@SSI_key, _:(%1), _:(%2))
-#define SSI_KeyMap_Get(%0,%1,%2) SSI@KeyMap_Get(%0@SSI_slot, %0@SSI_key, %0@SSI_value, sizeof %0@SSI_slot, _:(%1), _:%2)
-#define SSI_KeyMap_Contains(%0,%1) (SSI@KeyMap_Slot(%0@SSI_slot, %0@SSI_key, sizeof %0@SSI_slot, _:(%1)) >= 0)
-#define SSI_KeyMap_Remove(%0,%1) SSI@KeyMap_Remove(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, %0@SSI_slot, %0@SSI_key, sizeof %0@SSI_slot, sizeof %0@SSI_key, _:(%1))
-#define SSI_KeyMap_Count(%0) (%0@SSI_count)
-#define SSI_KeyMap_Clear(%0) SSI@KeyMap_Clear(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, %0@SSI_slot, %0@SSI_key, sizeof %0@SSI_slot, sizeof %0@SSI_key)
-#define SSI_KeyMap_Key(%0,%1) (%0@SSI_key[_:(%1)])
-#define SSI_KeyMap_Value(%0,%1) (%0@SSI_value[_:(%1)])
-
-/**
- * # Text Keys
- */
-
-/**
- * `Name<SIZE, LENGTH>` packs a key four characters to a cell and hashes it one
- * cell at a time. The entry keeps the packed key and its hash. The table works
- * as it does with number keys, and a search compares text only where the hash
- * matches. The packing buffer holds two cells more than `LENGTH`, so the
- * functions read `LENGTH` back with `sizeof`. A packed key uses fewer cells.
- */
-#define SSI_StringMap_Declare(%0,%1,%2) \
-    %0@SSI_slot[_:(%1) * 2] = { -1, ... }, \
-    %0@SSI_hash[_:(%1)], \
-    %0@SSI_key[_:(%1) * (((%2) + 1) char)], \
-    %0@SSI_value[_:(%1)], \
-    %0@SSI_next[_:(%1) + 1] = { _:(%1), ... }, \
-    %0@SSI_prev[_:(%1) + 1] = { _:(%1) * 2, _:(%1) * 2 - 1, ... }, \
-    %0@SSI_count, \
-    %0@SSI_free, \
-    %0@SSI_pack[(%2) + 2]
-
-#define SSI_StringMap_Set(%0,%1,%2) SSI@StringMap_Set(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, %0@SSI_slot, %0@SSI_hash, %0@SSI_key, %0@SSI_value, %0@SSI_pack, sizeof %0@SSI_slot, sizeof %0@SSI_hash, (sizeof %0@SSI_pack - 1) char, sizeof %0@SSI_pack - 2, %1, _:(%2))
-#define SSI_StringMap_Get(%0,%1,%2) (SSI@found = SSI@StringMap_Find(%0@SSI_slot, %0@SSI_hash, %0@SSI_key, %0@SSI_value, %0@SSI_pack, sizeof %0@SSI_slot, (sizeof %0@SSI_pack - 1) char, %1, _:%2) >= 0)
-#define SSI_StringMap_Contains(%0,%1) (SSI@StringMap_Find(%0@SSI_slot, %0@SSI_hash, %0@SSI_key, %0@SSI_value, %0@SSI_pack, sizeof %0@SSI_slot, (sizeof %0@SSI_pack - 1) char, %1, SSI@value) >= 0)
-#define SSI_StringMap_Remove(%0,%1) SSI@StringMap_Remove(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, %0@SSI_slot, %0@SSI_hash, %0@SSI_key, %0@SSI_value, %0@SSI_pack, sizeof %0@SSI_slot, sizeof %0@SSI_hash, (sizeof %0@SSI_pack - 1) char, %1)
-#define SSI_StringMap_Count(%0) (%0@SSI_count)
-#define SSI_StringMap_Clear(%0) SSI@StringMap_Clear(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, %0@SSI_slot, %0@SSI_hash, sizeof %0@SSI_slot, sizeof %0@SSI_hash)
-#define SSI_StringMap_Key(%0,%1,%2) SSI@StringMap_Key(%2, sizeof (%2), %0@SSI_key[_:(%1) * ((sizeof %0@SSI_pack - 1) char)])
-#define SSI_StringMap_Value(%0,%1) (%0@SSI_value[_:(%1)])
-
-/**
  * # Internal
  */
 
@@ -1081,3 +998,78 @@ stock SSI@StringMap_Clear(&count, &free, next[], prev[], slot[], const hashes[],
     next[size] = size;
     prev[size] = size;
 }
+
+/**
+ * # External
+ */
+
+#undef Dictionary
+
+/**
+ * Declares the dictionary tagged `%0`, `Name<SIZE>` with number keys or
+ * `Name<SIZE, LENGTH>` with text keys, static when the declaration is.
+ *
+ *     static
+ *         Dictionary:Expiry<MAX_EXPIRY_BUCKETS>,
+ *         Dictionary:Command<MAX_COMMANDS, MAX_COMMAND_LENGTH>
+ *     ;
+ */
+#define Dictionary:%0<%1> SSI_DICTIONARY_DECLARE_A:%0|||%1,,|||
+
+#define SSI_DICTIONARY_DECLARE_A:%0|||%1,%4,%5||| SSI_DICTIONARY_DECLARE_B%5X|||%0|||%1|||%4|||
+#define SSI_DICTIONARY_DECLARE_BX|||%0|||%1|||%4||| SSI_KeyMap_Declare(%0,%1)
+#define SSI_DICTIONARY_DECLARE_B,X|||%0|||%1|||%4||| SSI_StringMap_Declare(%0,%1,%4)
+
+/**
+ * `Name<SIZE>` keeps its keys in a table with twice as many slots as its
+ * capacity. A slot holds the entry of a key, or `-1`. A key starts at the slot
+ * its hash points to and takes the next empty one. Removing a key pulls back
+ * the keys after it that belong before the hole, so no slot is ever left marked
+ * and a search stops at the first empty slot. The entries, which hold the key
+ * and the value, form a handle pool: an entry keeps its id while it lives, and
+ * `foreach` walks them.
+ */
+#define SSI_KeyMap_Declare(%0,%1) \
+    %0@SSI_slot[_:(%1) * 2] = { -1, ... }, \
+    %0@SSI_key[_:(%1)], \
+    %0@SSI_value[_:(%1)], \
+    %0@SSI_next[_:(%1) + 1] = { _:(%1), ... }, \
+    %0@SSI_prev[_:(%1) + 1] = { _:(%1) * 2, _:(%1) * 2 - 1, ... }, \
+    %0@SSI_count, \
+    %0@SSI_free
+
+#define SSI_KeyMap_Set(%0,%1,%2) SSI@KeyMap_Set(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, %0@SSI_slot, %0@SSI_key, %0@SSI_value, sizeof %0@SSI_slot, sizeof %0@SSI_key, _:(%1), _:(%2))
+#define SSI_KeyMap_Get(%0,%1,%2) SSI@KeyMap_Get(%0@SSI_slot, %0@SSI_key, %0@SSI_value, sizeof %0@SSI_slot, _:(%1), _:%2)
+#define SSI_KeyMap_Contains(%0,%1) (SSI@KeyMap_Slot(%0@SSI_slot, %0@SSI_key, sizeof %0@SSI_slot, _:(%1)) >= 0)
+#define SSI_KeyMap_Remove(%0,%1) SSI@KeyMap_Remove(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, %0@SSI_slot, %0@SSI_key, sizeof %0@SSI_slot, sizeof %0@SSI_key, _:(%1))
+#define SSI_KeyMap_Count(%0) (%0@SSI_count)
+#define SSI_KeyMap_Clear(%0) SSI@KeyMap_Clear(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, %0@SSI_slot, %0@SSI_key, sizeof %0@SSI_slot, sizeof %0@SSI_key)
+#define SSI_KeyMap_Key(%0,%1) (%0@SSI_key[_:(%1)])
+#define SSI_KeyMap_Value(%0,%1) (%0@SSI_value[_:(%1)])
+
+/**
+ * `Name<SIZE, LENGTH>` packs a key four characters to a cell and hashes it one
+ * cell at a time. The entry keeps the packed key and its hash. The table works
+ * as it does with number keys, and a search compares text only where the hash
+ * matches. The packing buffer holds two cells more than `LENGTH`, so the
+ * functions read `LENGTH` back with `sizeof`. A packed key uses fewer cells.
+ */
+#define SSI_StringMap_Declare(%0,%1,%2) \
+    %0@SSI_slot[_:(%1) * 2] = { -1, ... }, \
+    %0@SSI_hash[_:(%1)], \
+    %0@SSI_key[_:(%1) * (((%2) + 1) char)], \
+    %0@SSI_value[_:(%1)], \
+    %0@SSI_next[_:(%1) + 1] = { _:(%1), ... }, \
+    %0@SSI_prev[_:(%1) + 1] = { _:(%1) * 2, _:(%1) * 2 - 1, ... }, \
+    %0@SSI_count, \
+    %0@SSI_free, \
+    %0@SSI_pack[(%2) + 2]
+
+#define SSI_StringMap_Set(%0,%1,%2) SSI@StringMap_Set(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, %0@SSI_slot, %0@SSI_hash, %0@SSI_key, %0@SSI_value, %0@SSI_pack, sizeof %0@SSI_slot, sizeof %0@SSI_hash, (sizeof %0@SSI_pack - 1) char, sizeof %0@SSI_pack - 2, %1, _:(%2))
+#define SSI_StringMap_Get(%0,%1,%2) (SSI@found = SSI@StringMap_Find(%0@SSI_slot, %0@SSI_hash, %0@SSI_key, %0@SSI_value, %0@SSI_pack, sizeof %0@SSI_slot, (sizeof %0@SSI_pack - 1) char, %1, _:%2) >= 0)
+#define SSI_StringMap_Contains(%0,%1) (SSI@StringMap_Find(%0@SSI_slot, %0@SSI_hash, %0@SSI_key, %0@SSI_value, %0@SSI_pack, sizeof %0@SSI_slot, (sizeof %0@SSI_pack - 1) char, %1, SSI@value) >= 0)
+#define SSI_StringMap_Remove(%0,%1) SSI@StringMap_Remove(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, %0@SSI_slot, %0@SSI_hash, %0@SSI_key, %0@SSI_value, %0@SSI_pack, sizeof %0@SSI_slot, sizeof %0@SSI_hash, (sizeof %0@SSI_pack - 1) char, %1)
+#define SSI_StringMap_Count(%0) (%0@SSI_count)
+#define SSI_StringMap_Clear(%0) SSI@StringMap_Clear(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, %0@SSI_slot, %0@SSI_hash, sizeof %0@SSI_slot, sizeof %0@SSI_hash)
+#define SSI_StringMap_Key(%0,%1,%2) SSI@StringMap_Key(%2, sizeof (%2), %0@SSI_key[_:(%1) * ((sizeof %0@SSI_pack - 1) char)])
+#define SSI_StringMap_Value(%0,%1) (%0@SSI_value[_:(%1)])

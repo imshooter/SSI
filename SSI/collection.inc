@@ -353,231 +353,6 @@ forward Collection_Redeem(Collection:collection<>, ticket);
 #define SSI_FOREACH_G:%2|||%0|||(%3)|||%1||| %2:%1=%2:(sizeof %0@SSI_group+_:(%3));_:(%1=%2:%0@SSI_next[_:%1])!=sizeof %0@SSI_group+_:(%3);
 
 /**
- * # Declaration
- */
-
-#undef Collection
-
-/**
- * Declares the collection `%0`, with the structure picked by the brackets,
- * static when the declaration is. `Collection<Generation>:` declares a handle
- * pool that counts generations. On an indexed pool or a group collection it is
- * an error.
- *
- *     static
- *         Collection:Business<MAX_BUSINESSES>,
- *         Collection<Generation>:Report<MAX_REPORTS>,
- *         Collection:FactionVehicle[MAX_FACTIONS]<MAX_FACTION_VEHICLES>
- *     ;
- *
- *     new
- *         Collection:OwnedHouse<MAX_PLAYERS, MAX_HOUSES>
- *     ;
- */
-#define Collection%9:%0<%1> SSI_COLLECTION_KIND:%9<>|||%0|||%1|||
-
-#define SSI_COLLECTION_KIND:<%9>%8|||%0|||%1||| SSI_COLLECTION_KIND_%9|||%0|||%1|||
-#define SSI_COLLECTION_KIND_|||%0|||%1||| SSI_COLLECTION_DECLARE_A:%0[]C|||%1,,|||0|||
-#define SSI_COLLECTION_KIND_Generation|||%0|||%1||| SSI_COLLECTION_DECLARE_A:%0[]C|||%1,,|||1|||
-
-#define SSI_COLLECTION_DECLARE_A:%0[%2]%3|||%1|||%6||| SSI_COLLECTION_DECLARE_B%3|||%0|||%2|||%1|||%6|||
-#define SSI_COLLECTION_DECLARE_B[]C|||%0|||%2|||%1,,|||%6||| SSI_COLLECTION_HANDLE_ONLY_%6 SSI_IndexedPool_Declare(%0,%2,%1)
-#define SSI_COLLECTION_DECLARE_BC|||%0|||%2|||%1,%4,%5|||%6||| SSI_COLLECTION_DECLARE_C%5X|||%0|||%1|||%4|||%6|||
-#define SSI_COLLECTION_DECLARE_CX|||%0|||%1|||%4|||%6||| SSI_HandlePool_Declare(%0,%1,%6)
-#define SSI_COLLECTION_DECLARE_C,X|||%0|||%1|||%4|||%6||| SSI_COLLECTION_HANDLE_ONLY_%6 SSI_GroupPool_Declare(%0,%1,%4)
-#define SSI_COLLECTION_HANDLE_ONLY_0
-#define SSI_COLLECTION_HANDLE_ONLY_1 SSI@generation[Generation_works_on_handle_pools_only],
-
-/**
- * # Handle Pool
- */
-
-/**
- * `Name<SIZE>` is a handle pool. It hands out the ids of one tag, takes them
- * back, checks them and walks them. Each of these takes the same time with ten
- * ids in use or with a hundred thousand, and a walk costs one step for each id
- * in use. The ids in use form a doubly linked list: `next` holds the id after
- * each one, and its last cell is the anchor, where a walk starts and ends.
- * `prev` holds the id before each id in use, never more than `size`. For an id
- * not in use, it holds the next free id written as `size * 2 + 1 - id`, always
- * more than `size`, so the free ids form a stack. A retired id holds
- * `size * 2 + 2`. The next id handed out is the one given back last, or else
- * the lowest never used, and it goes back in front of the id that was after it.
- * The same layout holds the ids given to it with `Collection_Add`, such as the
- * players and vehicles of iterator.inc.
- *
- * `Collection<Generation>:Name<SIZE>` has `size` more cells at the end of
- * `prev`, holding the generation of each id. A generation is counted up when
- * its id is taken out, retired or cleared. The calls on generations pass that
- * end of `prev` as an array, so on a pool without it they fail at compile time
- * on the bounds of `prev`.
- */
-#define SSI_HandlePool_Declare(%0,%1,%2) \
-    %0@SSI_next[_:(%1) + 1] = { _:(%1), ... }, \
-    %0@SSI_prev[_:(%1) * (%2 + 1) + 1] = { _:(%1) * 2, _:(%1) * 2 - 1, ... }, \
-    %0@SSI_count, \
-    %0@SSI_free
-
-#define SSI_HandlePool_Alloc(%0) (%0:SSI@HandlePool_Alloc(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1))
-#define SSI_HandlePool_Add(%0,%1) SSI@HandlePool_Add(%0@SSI_count, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
-#define SSI_HandlePool_Remove(%0,%1) SSI@HandlePool_Remove(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)), sizeof %0@SSI_prev != sizeof %0@SSI_next)
-#define SSI_HandlePool_Retire(%0,%1) SSI@HandlePool_Retire(%0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)), sizeof %0@SSI_prev != sizeof %0@SSI_next)
-#define SSI_HandlePool_Recycle(%0,%1) SSI@HandlePool_Recycle(%0@SSI_count, %0@SSI_free, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
-#define SSI_HandlePool_Contains(%0,%1) SSI@HandlePool_Contains(%0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
-#define SSI_HandlePool_Count(%0) (%0@SSI_count)
-#define SSI_HandlePool_Clear(%0) SSI@HandlePool_Clear(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, sizeof %0@SSI_prev != sizeof %0@SSI_next)
-#define SSI_HandlePool_Generation(%0,%1) SSI@HandlePool_Generation(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
-#define SSI_HandlePool_Alive(%0,%1,%2) SSI@HandlePool_Alive(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)), %2)
-#define SSI_HandlePool_Ticket(%0,%1) SSI@HandlePool_Ticket(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
-#define SSI_HandlePool_Redeem(%0,%1) (%0:SSI@HandlePool_Redeem(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, %1))
-
-/**
- * # Indexed Pool
- */
-
-/**
- * `Name[COUNT]<SIZE>` is an indexed pool: a handle pool for each index, kept
- * in rows of the same arrays, so the functions of a handle pool run on a row.
- * When the number of indexes is tagged, the index must carry that tag. Every
- * call checks the index and answers as an empty pool when the index is out of
- * range. `foreach` does not check it, so walk only a valid index.
- */
-#define SSI_IndexedPool_Declare(%0,%1,%2) \
-    %0@SSI_next[%1][_:(%2) + 1] = { { _:(%2), ... }, ... }, \
-    %0@SSI_prev[%1][_:(%2) + 1] = { { _:(%2) * 2, _:(%2) * 2 - 1, ... }, ... }, \
-    %0@SSI_count[%1], \
-    %0@SSI_free[%1]
-
-#define SSI_IndexedPool_Alloc(%0,%1) (%0:((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? SSI@HandlePool_Alloc(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1) : -1))
-#define SSI_IndexedPool_Add(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Add(%0@SSI_count[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, _:(%0:SSI@id = (%2))))
-#define SSI_IndexedPool_Remove(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Remove(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, _:(%0:SSI@id = (%2)), false))
-#define SSI_IndexedPool_Retire(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Retire(%0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, _:(%0:SSI@id = (%2)), false))
-#define SSI_IndexedPool_Recycle(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Recycle(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_prev[] - 1, _:(%0:SSI@id = (%2))))
-#define SSI_IndexedPool_Contains(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Contains(%0@SSI_prev[(%1)], sizeof %0@SSI_prev[] - 1, _:(%0:SSI@id = (%2))))
-#define SSI_IndexedPool_Count(%0,%1) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? %0@SSI_count[(%1)] : 0)
-#define SSI_IndexedPool_Clear(%0,%1) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Clear(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, false))
-
-/**
- * # Group
- */
-
-/**
- * `Name<GROUPS, SIZE>` shares one range of values out among groups, each value
- * in one group at most, as y_iterate's `Iterator:Name<GROUPS, SIZE>`. Each
- * group is a ring through its anchor, the cell `size + group`: `next` holds the
- * value after each one and `prev` the one before, so a value comes out in
- * place, keeping its `next`. `group` holds the group of each value, `-1` while
- * it is in none, and `count` the size of each group. A value goes last in its
- * group. The ids it hands out itself come from a stack held in the `prev` of
- * the ids given back, with `free` holding the top of that stack and the lowest
- * id never used.
- */
-#define SSI_GroupPool_Declare(%0,%1,%2) \
-    %0@SSI_next[_:(%2) + _:(%1)] = { 0, 1, ... }, \
-    %0@SSI_prev[_:(%2) + _:(%1)] = { 0, 1, ... }, \
-    %0@SSI_group[_:(%2)] = { -1, ... }, \
-    %0@SSI_count[_:(%1)], \
-    %0@SSI_free[2] = { -1, 0 }
-
-#define SSI_GroupPool_Alloc(%0,%1) (%0:SSI@GroupPool_Alloc(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_free[0], %0@SSI_free[1], sizeof %0@SSI_group, sizeof %0@SSI_count, _:(%1)))
-#define SSI_GroupPool_Add(%0,%1,%2) SSI@GroupPool_Add(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, sizeof %0@SSI_group, sizeof %0@SSI_count, _:(%1), _:(%2))
-#define SSI_GroupPool_Remove(%0,%1,%2) SSI@GroupPool_Remove(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_free[0], sizeof %0@SSI_group, _:(%2))
-#define SSI_GroupPool_Clear(%0,%1) SSI@GroupPool_Clear(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_free[0], sizeof %0@SSI_group, sizeof %0@SSI_count, _:(%1))
-#define SSI_GroupPool_Group(%0,%1,%2) SSI@GroupPool_Group(%0@SSI_group, sizeof %0@SSI_group, _:(%2))
-#define SSI_GroupPool_Contains(%0,%1,%2) SSI@GroupPool_Contains(%0@SSI_group, sizeof %0@SSI_group, sizeof %0@SSI_count, _:(%1), _:(%2))
-#define SSI_GroupPool_Count(%0,%1) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? %0@SSI_count[SSI@index] : 0)
-
-/**
- * # Iterator Functions
- */
-
-/**
- * Makes `SSI@state` and the name of a loop variable one symbol: the state an
- * iterator function keeps for that loop.
- */
-#define SSI@state%0\32; SSI@state
-
-/**
- * @brief      Walk the values a collection does not hold, lowest first.
- *
- * The free ids of a pool or of one index, the values of a group collection in
- * no group with `Name<>`, or the values not in one group with `Name<group>`.
- *
- *     foreach (new Business:businessid : None(Business)) {
- *     }
- *
- * @param      collection  `Name`, `Name[index]`, `Name<>` or `Name<group>`.
- */
-#define None@SSI_loop|||%9|||%1|||(%3)||| SSI_COLLECTION_WALK|||None|||%9|||%1|||%3|||
-
-/**
- * @brief      Walk the values a collection holds, lowest first.
- *
- * The values a walk of the collection gives, in order of value instead of the
- * order they went in. `Name<>` gives the values in any group.
- *
- *     foreach (new value : All(OwnedHouse<>)) {
- *     }
- *
- * @param      collection  `Name`, `Name[index]`, `Name<>` or `Name<group>`.
- */
-#define All@SSI_loop|||%9|||%1|||(%3)||| SSI_COLLECTION_WALK|||All|||%9|||%1|||%3|||
-
-/**
- * @brief      Walk the indexes of an indexed pool, or the groups of a group
- *             collection, that hold nothing.
- *
- *     foreach (new factionid : Empty(FactionVehicle[])) {
- *     }
- *
- *     foreach (new playerid : Empty(OwnedHouse<>)) {
- *     }
- *
- * @param      collection  `Name[]` or `Name<>`.
- */
-#define Empty@SSI_loop|||%9|||%1|||(%3)||| SSI_COLLECTION_WALK|||Empty|||%9|||%1|||%3|||
-
-/**
- * @brief      Walk the indexes, or the groups, that hold something.
- *
- * @param      collection  `Name[]` or `Name<>`.
- */
-#define NonEmpty@SSI_loop|||%9|||%1|||(%3)||| SSI_COLLECTION_WALK|||NonEmpty|||%9|||%1|||%3|||
-
-/**
- * @brief      Walk the indexes, or the groups, that hold as many values as there
- *             is room for.
- *
- * @param      collection  `Name[]` or `Name<>`.
- */
-#define Full@SSI_loop|||%9|||%1|||(%3)||| SSI_COLLECTION_WALK|||Full|||%9|||%1|||%3|||
-
-/**
- * @brief      Walk the indexes, or the groups, that have room for one more
- *             value.
- *
- * @param      collection  `Name[]` or `Name<>`.
- */
-#define NonFull@SSI_loop|||%9|||%1|||(%3)||| SSI_COLLECTION_WALK|||NonFull|||%9|||%1|||%3|||
-
-#define SSI_COLLECTION_WALK|||%0|||%9|||%1|||%3||| %9%1=%9(-1);_:(%1=%9(SSI_COLLECTION_A:%3<>Y|||%0|||(,(_:%1))))!=-1;
-
-#define SSI_HandlePool_None(%0,%1) SSI@HandlePool_Next(%0@SSI_prev, sizeof %0@SSI_next - 1, %1, false)
-#define SSI_HandlePool_All(%0,%1) SSI@HandlePool_Next(%0@SSI_prev, sizeof %0@SSI_next - 1, %1, true)
-#define SSI_IndexedPool_None(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? SSI@HandlePool_Next(%0@SSI_prev[(%1)], sizeof %0@SSI_prev[] - 1, %2, false) : -1)
-#define SSI_IndexedPool_All(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? SSI@HandlePool_Next(%0@SSI_prev[(%1)], sizeof %0@SSI_prev[] - 1, %2, true) : -1)
-#define SSI_IndexedPool_Empty(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, 0, 0)
-#define SSI_IndexedPool_NonEmpty(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, 1, cellmax)
-#define SSI_IndexedPool_Full(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, sizeof %0@SSI_next[] - 1, cellmax)
-#define SSI_IndexedPool_NonFull(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, 0, sizeof %0@SSI_next[] - 2)
-#define SSI_GroupPool_None(%0,%1,%2) SSI@GroupPool_Next(%0@SSI_group, sizeof %0@SSI_group, %2, SSI@GroupPool_Pick(%1), false)
-#define SSI_GroupPool_All(%0,%1,%2) SSI@GroupPool_Next(%0@SSI_group, sizeof %0@SSI_group, %2, SSI@GroupPool_Pick(%1), true)
-#define SSI_GroupPool_Empty(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, 0, 0)
-#define SSI_GroupPool_NonEmpty(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, 1, cellmax)
-#define SSI_GroupPool_Full(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, sizeof %0@SSI_group, cellmax)
-#define SSI_GroupPool_NonFull(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, 0, sizeof %0@SSI_group - 1)
-
-/**
  * # Internal
  */
 
@@ -1338,3 +1113,212 @@ stock SSI@Count_Next(const count[], length, index, low, high) {
 
     return -1;
 }
+
+/**
+ * # External
+ */
+
+#undef Collection
+
+/**
+ * Declares the collection `%0`, with the structure picked by the brackets,
+ * static when the declaration is. `Collection<Generation>:` declares a handle
+ * pool that counts generations. On an indexed pool or a group collection it is
+ * an error.
+ *
+ *     static
+ *         Collection:Business<MAX_BUSINESSES>,
+ *         Collection<Generation>:Report<MAX_REPORTS>,
+ *         Collection:FactionVehicle[MAX_FACTIONS]<MAX_FACTION_VEHICLES>
+ *     ;
+ *
+ *     new
+ *         Collection:OwnedHouse<MAX_PLAYERS, MAX_HOUSES>
+ *     ;
+ */
+#define Collection%9:%0<%1> SSI_COLLECTION_KIND:%9<>|||%0|||%1|||
+
+#define SSI_COLLECTION_KIND:<%9>%8|||%0|||%1||| SSI_COLLECTION_KIND_%9|||%0|||%1|||
+#define SSI_COLLECTION_KIND_|||%0|||%1||| SSI_COLLECTION_DECLARE_A:%0[]C|||%1,,|||0|||
+#define SSI_COLLECTION_KIND_Generation|||%0|||%1||| SSI_COLLECTION_DECLARE_A:%0[]C|||%1,,|||1|||
+
+#define SSI_COLLECTION_DECLARE_A:%0[%2]%3|||%1|||%6||| SSI_COLLECTION_DECLARE_B%3|||%0|||%2|||%1|||%6|||
+#define SSI_COLLECTION_DECLARE_B[]C|||%0|||%2|||%1,,|||%6||| SSI_COLLECTION_HANDLE_ONLY_%6 SSI_IndexedPool_Declare(%0,%2,%1)
+#define SSI_COLLECTION_DECLARE_BC|||%0|||%2|||%1,%4,%5|||%6||| SSI_COLLECTION_DECLARE_C%5X|||%0|||%1|||%4|||%6|||
+#define SSI_COLLECTION_DECLARE_CX|||%0|||%1|||%4|||%6||| SSI_HandlePool_Declare(%0,%1,%6)
+#define SSI_COLLECTION_DECLARE_C,X|||%0|||%1|||%4|||%6||| SSI_COLLECTION_HANDLE_ONLY_%6 SSI_GroupPool_Declare(%0,%1,%4)
+#define SSI_COLLECTION_HANDLE_ONLY_0
+#define SSI_COLLECTION_HANDLE_ONLY_1 SSI@generation[Generation_works_on_handle_pools_only],
+
+/**
+ * `Name<SIZE>` is a handle pool. It hands out the ids of one tag, takes them
+ * back, checks them and walks them. Each of these takes the same time with ten
+ * ids in use or with a hundred thousand, and a walk costs one step for each id
+ * in use. The ids in use form a doubly linked list: `next` holds the id after
+ * each one, and its last cell is the anchor, where a walk starts and ends.
+ * `prev` holds the id before each id in use, never more than `size`. For an id
+ * not in use, it holds the next free id written as `size * 2 + 1 - id`, always
+ * more than `size`, so the free ids form a stack. A retired id holds
+ * `size * 2 + 2`. The next id handed out is the one given back last, or else
+ * the lowest never used, and it goes back in front of the id that was after it.
+ * The same layout holds the ids given to it with `Collection_Add`, such as the
+ * players and vehicles of iterator.inc.
+ *
+ * `Collection<Generation>:Name<SIZE>` has `size` more cells at the end of
+ * `prev`, holding the generation of each id. A generation is counted up when
+ * its id is taken out, retired or cleared. The calls on generations pass that
+ * end of `prev` as an array, so on a pool without it they fail at compile time
+ * on the bounds of `prev`.
+ */
+#define SSI_HandlePool_Declare(%0,%1,%2) \
+    %0@SSI_next[_:(%1) + 1] = { _:(%1), ... }, \
+    %0@SSI_prev[_:(%1) * (%2 + 1) + 1] = { _:(%1) * 2, _:(%1) * 2 - 1, ... }, \
+    %0@SSI_count, \
+    %0@SSI_free
+
+#define SSI_HandlePool_Alloc(%0) (%0:SSI@HandlePool_Alloc(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1))
+#define SSI_HandlePool_Add(%0,%1) SSI@HandlePool_Add(%0@SSI_count, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
+#define SSI_HandlePool_Remove(%0,%1) SSI@HandlePool_Remove(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)), sizeof %0@SSI_prev != sizeof %0@SSI_next)
+#define SSI_HandlePool_Retire(%0,%1) SSI@HandlePool_Retire(%0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)), sizeof %0@SSI_prev != sizeof %0@SSI_next)
+#define SSI_HandlePool_Recycle(%0,%1) SSI@HandlePool_Recycle(%0@SSI_count, %0@SSI_free, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
+#define SSI_HandlePool_Contains(%0,%1) SSI@HandlePool_Contains(%0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
+#define SSI_HandlePool_Count(%0) (%0@SSI_count)
+#define SSI_HandlePool_Clear(%0) SSI@HandlePool_Clear(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, sizeof %0@SSI_prev != sizeof %0@SSI_next)
+#define SSI_HandlePool_Generation(%0,%1) SSI@HandlePool_Generation(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
+#define SSI_HandlePool_Alive(%0,%1,%2) SSI@HandlePool_Alive(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)), %2)
+#define SSI_HandlePool_Ticket(%0,%1) SSI@HandlePool_Ticket(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
+#define SSI_HandlePool_Redeem(%0,%1) (%0:SSI@HandlePool_Redeem(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, %1))
+
+/**
+ * `Name[COUNT]<SIZE>` is an indexed pool: a handle pool for each index, kept
+ * in rows of the same arrays, so the functions of a handle pool run on a row.
+ * When the number of indexes is tagged, the index must carry that tag. Every
+ * call checks the index and answers as an empty pool when the index is out of
+ * range. `foreach` does not check it, so walk only a valid index.
+ */
+#define SSI_IndexedPool_Declare(%0,%1,%2) \
+    %0@SSI_next[%1][_:(%2) + 1] = { { _:(%2), ... }, ... }, \
+    %0@SSI_prev[%1][_:(%2) + 1] = { { _:(%2) * 2, _:(%2) * 2 - 1, ... }, ... }, \
+    %0@SSI_count[%1], \
+    %0@SSI_free[%1]
+
+#define SSI_IndexedPool_Alloc(%0,%1) (%0:((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? SSI@HandlePool_Alloc(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1) : -1))
+#define SSI_IndexedPool_Add(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Add(%0@SSI_count[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, _:(%0:SSI@id = (%2))))
+#define SSI_IndexedPool_Remove(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Remove(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, _:(%0:SSI@id = (%2)), false))
+#define SSI_IndexedPool_Retire(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Retire(%0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, _:(%0:SSI@id = (%2)), false))
+#define SSI_IndexedPool_Recycle(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Recycle(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_prev[] - 1, _:(%0:SSI@id = (%2))))
+#define SSI_IndexedPool_Contains(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Contains(%0@SSI_prev[(%1)], sizeof %0@SSI_prev[] - 1, _:(%0:SSI@id = (%2))))
+#define SSI_IndexedPool_Count(%0,%1) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? %0@SSI_count[(%1)] : 0)
+#define SSI_IndexedPool_Clear(%0,%1) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Clear(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, false))
+
+/**
+ * `Name<GROUPS, SIZE>` shares one range of values out among groups, each value
+ * in one group at most, as y_iterate's `Iterator:Name<GROUPS, SIZE>`. Each
+ * group is a ring through its anchor, the cell `size + group`: `next` holds the
+ * value after each one and `prev` the one before, so a value comes out in
+ * place, keeping its `next`. `group` holds the group of each value, `-1` while
+ * it is in none, and `count` the size of each group. A value goes last in its
+ * group. The ids it hands out itself come from a stack held in the `prev` of
+ * the ids given back, with `free` holding the top of that stack and the lowest
+ * id never used.
+ */
+#define SSI_GroupPool_Declare(%0,%1,%2) \
+    %0@SSI_next[_:(%2) + _:(%1)] = { 0, 1, ... }, \
+    %0@SSI_prev[_:(%2) + _:(%1)] = { 0, 1, ... }, \
+    %0@SSI_group[_:(%2)] = { -1, ... }, \
+    %0@SSI_count[_:(%1)], \
+    %0@SSI_free[2] = { -1, 0 }
+
+#define SSI_GroupPool_Alloc(%0,%1) (%0:SSI@GroupPool_Alloc(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_free[0], %0@SSI_free[1], sizeof %0@SSI_group, sizeof %0@SSI_count, _:(%1)))
+#define SSI_GroupPool_Add(%0,%1,%2) SSI@GroupPool_Add(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, sizeof %0@SSI_group, sizeof %0@SSI_count, _:(%1), _:(%2))
+#define SSI_GroupPool_Remove(%0,%1,%2) SSI@GroupPool_Remove(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_free[0], sizeof %0@SSI_group, _:(%2))
+#define SSI_GroupPool_Clear(%0,%1) SSI@GroupPool_Clear(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_free[0], sizeof %0@SSI_group, sizeof %0@SSI_count, _:(%1))
+#define SSI_GroupPool_Group(%0,%1,%2) SSI@GroupPool_Group(%0@SSI_group, sizeof %0@SSI_group, _:(%2))
+#define SSI_GroupPool_Contains(%0,%1,%2) SSI@GroupPool_Contains(%0@SSI_group, sizeof %0@SSI_group, sizeof %0@SSI_count, _:(%1), _:(%2))
+#define SSI_GroupPool_Count(%0,%1) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? %0@SSI_count[SSI@index] : 0)
+
+/**
+ * Makes `SSI@state` and the name of a loop variable one symbol: the state an
+ * iterator function keeps for that loop.
+ */
+#define SSI@state%0\32; SSI@state
+
+/**
+ * @brief      Walk the values a collection does not hold, lowest first.
+ *
+ * The free ids of a pool or of one index, the values of a group collection in
+ * no group with `Name<>`, or the values not in one group with `Name<group>`.
+ *
+ *     foreach (new Business:businessid : None(Business)) {
+ *     }
+ *
+ * @param      collection  `Name`, `Name[index]`, `Name<>` or `Name<group>`.
+ */
+#define None@SSI_loop|||%9|||%1|||(%3)||| SSI_COLLECTION_WALK|||None|||%9|||%1|||%3|||
+
+/**
+ * @brief      Walk the values a collection holds, lowest first.
+ *
+ * The values a walk of the collection gives, in order of value instead of the
+ * order they went in. `Name<>` gives the values in any group.
+ *
+ *     foreach (new value : All(OwnedHouse<>)) {
+ *     }
+ *
+ * @param      collection  `Name`, `Name[index]`, `Name<>` or `Name<group>`.
+ */
+#define All@SSI_loop|||%9|||%1|||(%3)||| SSI_COLLECTION_WALK|||All|||%9|||%1|||%3|||
+
+/**
+ * @brief      Walk the indexes of an indexed pool, or the groups of a group
+ *             collection, that hold nothing.
+ *
+ *     foreach (new factionid : Empty(FactionVehicle[])) {
+ *     }
+ *
+ *     foreach (new playerid : Empty(OwnedHouse<>)) {
+ *     }
+ *
+ * @param      collection  `Name[]` or `Name<>`.
+ */
+#define Empty@SSI_loop|||%9|||%1|||(%3)||| SSI_COLLECTION_WALK|||Empty|||%9|||%1|||%3|||
+
+/**
+ * @brief      Walk the indexes, or the groups, that hold something.
+ *
+ * @param      collection  `Name[]` or `Name<>`.
+ */
+#define NonEmpty@SSI_loop|||%9|||%1|||(%3)||| SSI_COLLECTION_WALK|||NonEmpty|||%9|||%1|||%3|||
+
+/**
+ * @brief      Walk the indexes, or the groups, that hold as many values as there
+ *             is room for.
+ *
+ * @param      collection  `Name[]` or `Name<>`.
+ */
+#define Full@SSI_loop|||%9|||%1|||(%3)||| SSI_COLLECTION_WALK|||Full|||%9|||%1|||%3|||
+
+/**
+ * @brief      Walk the indexes, or the groups, that have room for one more
+ *             value.
+ *
+ * @param      collection  `Name[]` or `Name<>`.
+ */
+#define NonFull@SSI_loop|||%9|||%1|||(%3)||| SSI_COLLECTION_WALK|||NonFull|||%9|||%1|||%3|||
+
+#define SSI_COLLECTION_WALK|||%0|||%9|||%1|||%3||| %9%1=%9(-1);_:(%1=%9(SSI_COLLECTION_A:%3<>Y|||%0|||(,(_:%1))))!=-1;
+
+#define SSI_HandlePool_None(%0,%1) SSI@HandlePool_Next(%0@SSI_prev, sizeof %0@SSI_next - 1, %1, false)
+#define SSI_HandlePool_All(%0,%1) SSI@HandlePool_Next(%0@SSI_prev, sizeof %0@SSI_next - 1, %1, true)
+#define SSI_IndexedPool_None(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? SSI@HandlePool_Next(%0@SSI_prev[(%1)], sizeof %0@SSI_prev[] - 1, %2, false) : -1)
+#define SSI_IndexedPool_All(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? SSI@HandlePool_Next(%0@SSI_prev[(%1)], sizeof %0@SSI_prev[] - 1, %2, true) : -1)
+#define SSI_IndexedPool_Empty(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, 0, 0)
+#define SSI_IndexedPool_NonEmpty(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, 1, cellmax)
+#define SSI_IndexedPool_Full(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, sizeof %0@SSI_next[] - 1, cellmax)
+#define SSI_IndexedPool_NonFull(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, 0, sizeof %0@SSI_next[] - 2)
+#define SSI_GroupPool_None(%0,%1,%2) SSI@GroupPool_Next(%0@SSI_group, sizeof %0@SSI_group, %2, SSI@GroupPool_Pick(%1), false)
+#define SSI_GroupPool_All(%0,%1,%2) SSI@GroupPool_Next(%0@SSI_group, sizeof %0@SSI_group, %2, SSI@GroupPool_Pick(%1), true)
+#define SSI_GroupPool_Empty(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, 0, 0)
+#define SSI_GroupPool_NonEmpty(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, 1, cellmax)
+#define SSI_GroupPool_Full(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, sizeof %0@SSI_group, cellmax)
+#define SSI_GroupPool_NonFull(%0,%1,%2) SSI@Count_Next(%0@SSI_count, sizeof %0@SSI_count, %2 + SSI@whole%1, 0, sizeof %0@SSI_group - 1)

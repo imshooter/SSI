@@ -487,7 +487,7 @@ static stock bool:SSI@Command_Allowed(playerid, Command:commandid) {
 }
 
 /**
- * # Command
+ * # External
  */
 
 stock Command:Command_GetByName(const name[]) {
@@ -627,10 +627,6 @@ stock bool:Command_IsRestricted(const command[]) {
     return gCommandData[commandid][E_COMMAND_RESTRICTED];
 }
 
-/**
- * # Access
- */
-
 stock bool:Command_Allow(const command[], playerid, bool:allow = true) {
     new const
         Command:commandid = Command_GetByName(command)
@@ -665,10 +661,6 @@ stock bool:Command_IsAllowed(const command[], playerid) {
 
     return SSI@Command_Allowed(playerid, commandid);
 }
-
-/**
- * # Run
- */
 
 stock bool:Command_Run(playerid, const text[]) {
     if (!IsPlayerConnected(playerid)) {

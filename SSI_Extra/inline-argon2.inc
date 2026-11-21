@@ -174,7 +174,7 @@ static stock Inline:SSI_Argon2TakeInternal(requestid) {
 }
 
 /**
- * # Argon2
+ * # External
  */
 
 stock bool:Argon2_HashInline(Inline:callback<s>, const password[], memory = SSI_ARGON2_MEMORY, iterations = SSI_ARGON2_ITERATIONS, parallelism = SSI_ARGON2_PARALLELISM, length = SSI_ARGON2_LENGTH) {

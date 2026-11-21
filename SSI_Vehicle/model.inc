@@ -482,7 +482,7 @@ forward bool:IsVehicleModelWater(modelid);
 forward bool:IsVehicleModelOwnable(modelid);
 
 /**
- * # Vehicle Model
+ * # External
  */
 
 stock VEHICLE_FLAGS:GetVehicleModelFlags(modelid) {
