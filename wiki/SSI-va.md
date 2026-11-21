@@ -14,8 +14,8 @@ Variable arguments: `___(n)` passes on the arguments a function got, from
 its `n`th on, anywhere among the arguments of a call, as y_va's `___`.
 
 ```pawn
-stock SendFormatted(playerid, colour, const message[], OPEN_MP_TAGS:...) {
-    return SendClientMessage(playerid, colour, message, ___(3));
+stock SendFormatted(playerid, colour, const format[], OPEN_MP_TAGS:...) {
+    return SendClientMessage(playerid, colour, format, ___(3));
 }
 
 stock PrintBetween(OPEN_MP_TAGS:...) {

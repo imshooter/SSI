@@ -4,6 +4,10 @@
 #include <SSI\queue>
 ```
 
+## Requirements
+
+- `SSI\version`
+
 ## Quick Start
 
 Queues hand out the rows of an array and take them back first in, first out.

@@ -7,9 +7,9 @@
 ## Requirements
 
 - `SSI_Extra\inline-timers`
+- `SSI_Player\fps`
 - `SSI\bits`
 - `SSI\collection`
-- `SSI\dictionary`
 - `SSI\hooks`
 - [streamer](https://github.com/samp-incognito/samp-streamer-plugin)
 - [3DAndreas](https://github.com/imshooter/3DAndreas)
@@ -31,9 +31,13 @@ new const
   sits `FORKLIFT_FRAME_Y` ahead of the position of the vehicle and
   `FORKLIFT_FRAME_Z` above it with the forks down. A crate on the forks
   rises and falls with them once attached.
-- The client does not report how high the forks are. The library works it
-  out from how long the driver holds the fork keys, clamped at both ends,
-  where the real forks stop too.
+- The client does not report how high the forks are. The library moves
+  them as the game does while the driver holds the fork keys: a position
+  from 0 to 2500, raised 10 and lowered 20 for each fiftieth of a second,
+  cut to whole steps each frame, so the driver's frame rate (from
+  `GetPlayerFPS`) sets the pace. It stops at both ends, as the real forks.
+  The forks seen leave the ground only past 500 and rise 1.2 m by 2500,
+  so they wait about a second before rising from the bottom.
 - A crate is lifted when the forks rise under it: centred on them, turned
   with the forklift, and at the height of the forks. It then sits straight
   against the mast. A crate with one crate on it is lifted with that one,
@@ -265,7 +269,7 @@ The crate on top of a crate in a stack.
 forward Float:GetForkliftHeight(vehicleid);
 ```
 
-How high the forks of a forklift are thought to be, from how long the fork keys were held.
+How high the forks of a forklift are, moved as the game moves them while the driver holds the fork keys.
 
 | Parameter | Description |
 | --- | --- |

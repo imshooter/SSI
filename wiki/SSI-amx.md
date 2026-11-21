@@ -4,6 +4,10 @@
 #include <SSI\amx>
 ```
 
+## Requirements
+
+- `SSI\version`
+
 ## Quick Start
 
 Access to the memory of the script beyond its data, for the libraries that

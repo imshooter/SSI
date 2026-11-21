@@ -4,6 +4,10 @@
 #include <SSI\string>
 ```
 
+## Requirements
+
+- `SSI\version`
+
 ## Quick Start
 
 Strings changed in place and compared, beyond the natives of open.mp:

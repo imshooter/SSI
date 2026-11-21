@@ -13,13 +13,15 @@ With sampctl:
 sampctl package install imshooter/SSI
 ```
 
-By hand, copy the `SSI`, `SSI_Extra` and `SSI_Vehicle` folders into the include folder of the compiler, such as `qawno/include`. The tree then looks like this:
+By hand, copy the `SSI`, `SSI_Extra`, `SSI_Player`, `SSI_Vehicle` and `SSI_World` folders into the include folder of the compiler, such as `qawno/include`. The tree then looks like this:
 
 ```
 qawno/include/
     SSI/
     SSI_Extra/
+    SSI_Player/
     SSI_Vehicle/
+    SSI_World/
 ```
 
 ## Including
@@ -49,7 +51,9 @@ Most libraries need nothing beyond open.mp. These need a plugin or component:
 | `SSI_Extra\inline-argon2` | [async-crypto](https://github.com/roseeast/async-crypto) |
 | `SSI_Extra\inline-pg` | [omp-postgresql](https://github.com/itskoleban/omp-postgresql) |
 | `SSI_Vehicle\objective`, `SSI_Vehicle\neon`, `SSI_Vehicle\speed-camera` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin) |
-| `SSI_Vehicle\forklift` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin), [3DAndreas](https://github.com/imshooter/3DAndreas) |
+| `SSI_Vehicle\forklift` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin), [3DAndreas](https://github.com/imshooter/3DAndreas) 0.8.2 or later |
+| `SSI_World\zone` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin) |
+| `SSI_World\map-file` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin), and [PawnPlus](https://github.com/IllidanS4/PawnPlus) through `SSI\iterator` |
 
 `SSI\group` allows and denies commands only when `SSI\command` is included before it.
 

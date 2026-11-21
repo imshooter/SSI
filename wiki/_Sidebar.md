@@ -25,6 +25,7 @@
 * [test](SSI-test.md)
 * [unique](SSI-unique.md)
 * [va](SSI-va.md)
+* [version](SSI-version.md)
 
 **SSI_Extra**
 
@@ -35,6 +36,11 @@
 * [inline-object](SSI_Extra-inline-object.md)
 * [inline-pg](SSI_Extra-inline-pg.md)
 * [inline-timers](SSI_Extra-inline-timers.md)
+
+**SSI_Player**
+
+* [animation-preload](SSI_Player-animation-preload.md)
+* [fps](SSI_Player-fps.md)
 
 **SSI_Vehicle**
 
@@ -48,3 +54,8 @@
 * [objective](SSI_Vehicle-objective.md)
 * [parts](SSI_Vehicle-parts.md)
 * [speed-camera](SSI_Vehicle-speed-camera.md)
+
+**SSI_World**
+
+* [map-file](SSI_World-map-file.md)
+* [zone](SSI_World-zone.md)

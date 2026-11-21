@@ -14,3 +14,4 @@ For general SSI information, see the following links:
 
 * [Quick Start](../wiki/SSI-string.md#quick-start) shows how the library is used.
 * [API](../wiki/SSI-string.md#api) lists every function and macro.
+* [Requirements](../wiki/SSI-string.md#requirements) lists what it includes.

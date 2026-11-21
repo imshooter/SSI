@@ -4,6 +4,10 @@
 #include <SSI\unique>
 ```
 
+## Requirements
+
+- `SSI\version`
+
 ## Quick Start
 
 Unique names: every `#include <SSI\unique>` moves on to a new suffix

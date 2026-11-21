@@ -14,3 +14,4 @@ For general SSI information, see the following links:
 
 * [Quick Start](../wiki/SSI-queue.md#quick-start) shows how the library is used.
 * [API](../wiki/SSI-queue.md#api) lists every function and macro.
+* [Requirements](../wiki/SSI-queue.md#requirements) lists what it includes.

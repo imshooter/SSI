@@ -13,3 +13,4 @@ For general SSI information, see the following links:
 ## Documentation
 
 * [Quick Start](../wiki/SSI-unique.md#quick-start) shows how the library is used.
+* [Requirements](../wiki/SSI-unique.md#requirements) lists what it includes.

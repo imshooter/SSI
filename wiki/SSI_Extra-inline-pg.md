@@ -114,7 +114,7 @@ Close a connection. The queries still waiting here call their inline with `PG_ER
 ### `Postgres_QueryInline`
 
 ```pawn
-forward bool:Postgres_QueryInline(connection, Inline:callback<i>, const query[], OPEN_MP_TAGS:...);
+forward bool:Postgres_QueryInline(connection, Inline:callback<i>, const format[], OPEN_MP_TAGS:...);
 ```
 
 Send a query, then call an inline with its error.
@@ -123,7 +123,7 @@ Send a query, then call an inline with its error.
 | --- | --- |
 | `connection` | The connection. |
 | `callback` | The inline, as `using inline Name`, taking the error, `PG_ERROR_NONE` when the query ran. |
-| `query` | The query, with a specifier for each argument after it. |
+| `format` | The query, with a specifier for each argument after it. |
 
 **Returns**
 
@@ -140,7 +140,7 @@ Send a query, then call an inline with its error.
 ### `Postgres_Query`
 
 ```pawn
-forward bool:Postgres_Query(connection, const query[], OPEN_MP_TAGS:...);
+forward bool:Postgres_Query(connection, const format[], OPEN_MP_TAGS:...);
 ```
 
 Send a query that needs no answer.
@@ -148,7 +148,7 @@ Send a query that needs no answer.
 | Parameter | Description |
 | --- | --- |
 | `connection` | The connection. |
-| `query` | The query, with a specifier for each argument after it. |
+| `format` | The query, with a specifier for each argument after it. |
 
 **Returns**
 

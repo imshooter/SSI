@@ -46,12 +46,12 @@ AskName(playerid) {
 ### `Dialog_ShowInline`
 
 ```pawn
-forward bool:Dialog_ShowInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 ```
 
 Show a dialog whose answer calls an inline.
 
-The body is formatted with the arguments after `button2`, as
+`format` is formatted with the arguments after `button2`, as
 `ShowPlayerDialog` does.
 
 | Parameter | Description |
@@ -60,7 +60,7 @@ The body is formatted with the arguments after `button2`, as
 | `callback` | The inline, as `using inline Name`, taking the response, the list item and the text. |
 | `style` | The style. |
 | `title` | The title. |
-| `body` | The body. |
+| `format` | The body. |
 | `button1` | The left button. |
 | `button2` | The right button, empty for none. |
 
@@ -75,7 +75,7 @@ The body is formatted with the arguments after `button2`, as
 ### `Dialog_ShowMessageBoxInline`
 
 ```pawn
-forward bool:Dialog_ShowMessageBoxInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowMessageBoxInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 ```
 
 `Dialog_ShowInline` with `DIALOG_STYLE_MSGBOX`.
@@ -83,7 +83,7 @@ forward bool:Dialog_ShowMessageBoxInline(playerid, Inline:callback<iis>, const t
 ### `Dialog_ShowInputInline`
 
 ```pawn
-forward bool:Dialog_ShowInputInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowInputInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 ```
 
 `Dialog_ShowInline` with `DIALOG_STYLE_INPUT`.
@@ -91,7 +91,7 @@ forward bool:Dialog_ShowInputInline(playerid, Inline:callback<iis>, const title[
 ### `Dialog_ShowListInline`
 
 ```pawn
-forward bool:Dialog_ShowListInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowListInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 ```
 
 `Dialog_ShowInline` with `DIALOG_STYLE_LIST`.
@@ -99,7 +99,7 @@ forward bool:Dialog_ShowListInline(playerid, Inline:callback<iis>, const title[]
 ### `Dialog_ShowPasswordInline`
 
 ```pawn
-forward bool:Dialog_ShowPasswordInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowPasswordInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 ```
 
 `Dialog_ShowInline` with `DIALOG_STYLE_PASSWORD`.
@@ -107,7 +107,7 @@ forward bool:Dialog_ShowPasswordInline(playerid, Inline:callback<iis>, const tit
 ### `Dialog_ShowTabListInline`
 
 ```pawn
-forward bool:Dialog_ShowTabListInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowTabListInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 ```
 
 `Dialog_ShowInline` with `DIALOG_STYLE_TABLIST`.
@@ -115,7 +115,7 @@ forward bool:Dialog_ShowTabListInline(playerid, Inline:callback<iis>, const titl
 ### `Dialog_ShowTabListHeadersInline`
 
 ```pawn
-forward bool:Dialog_ShowTabListHeadersInline(playerid, Inline:callback<iis>, const title[], const body[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowTabListHeadersInline(playerid, Inline:callback<iis>, const title[], const format[], const button1[], const button2[] = "", OPEN_MP_TAGS:...);
 ```
 
 `Dialog_ShowInline` with `DIALOG_STYLE_TABLIST_HEADERS`.
@@ -123,12 +123,12 @@ forward bool:Dialog_ShowTabListHeadersInline(playerid, Inline:callback<iis>, con
 ### `Dialog_ShowPageInline`
 
 ```pawn
-forward bool:Dialog_ShowPageInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const body[], const button1[], const button2[] = "", rows = SSI_DIALOG_PAGE_ROWS, OPEN_MP_TAGS:...);
+forward bool:Dialog_ShowPageInline(playerid, Inline:callback<iis>, DIALOG_STYLE:style, const title[], const format[], const button1[], const button2[] = "", rows = SSI_DIALOG_PAGE_ROWS, OPEN_MP_TAGS:...);
 ```
 
 Show a list split into pages whose answer calls an inline.
 
-The body is formatted with the arguments after `rows`, one row a line. With
+`format` is formatted with the arguments after `rows`, one row a line. With
 `DIALOG_STYLE_TABLIST_HEADERS` the first line is the header, shown on every
 page. The inline gets the row of the whole list, from `0`, or `-1` when the
 dialog is cancelled.
@@ -139,7 +139,7 @@ dialog is cancelled.
 | `callback` | The inline, as `using inline Name`, taking the response, the row and its text. |
 | `style` | `DIALOG_STYLE_LIST`, `DIALOG_STYLE_TABLIST` or `DIALOG_STYLE_TABLIST_HEADERS`. |
 | `title` | The title. |
-| `body` | The rows. |
+| `format` | The rows. |
 | `button1` | The left button. |
 | `button2` | The right button, empty for none. |
 | `rows` | Rows on each page. |

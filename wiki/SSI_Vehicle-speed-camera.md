@@ -8,7 +8,6 @@
 
 - `SSI_Vehicle\math`
 - `SSI\collection`
-- `SSI\dictionary`
 - `SSI\inline`
 - `SSI_Extra\inline-timers`
 - `SSI\hooks`

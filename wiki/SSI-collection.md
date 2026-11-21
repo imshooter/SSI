@@ -4,6 +4,10 @@
 #include <SSI\collection>
 ```
 
+## Requirements
+
+- `SSI\version`
+
 ## Quick Start
 
 Collections: the structures of these libraries under one name, as y_iterate

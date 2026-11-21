@@ -20,8 +20,8 @@
  * sets the world, interior and stream distance of the objects after it in the
  * same file. `//` starts a comment, on its own line or after a call.
  *
- * A material or a text goes on the last object made; the object id written in
- * the call is ignored. A removal is done for every player connected now and
+ * A material or a text goes on the last object made, and the object id written
+ * in the call is ignored. A removal is done for every player connected now and
  * later, as one made by `RemoveMapBuilding`. A model is only added when its id
  * is free, since the server keeps the custom models when the gamemode
  * restarts.

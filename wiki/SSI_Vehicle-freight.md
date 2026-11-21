@@ -34,7 +34,8 @@ AddVehicleFreight(vehicleid, 1558);
   that side the crate may stay outside the vehicle, its edge at most
   `FREIGHT_REACH` from the end of the vehicle model. On a flat bed the
   forks reach over, and half the crate at least is over the outer slots on
-  that side. Towards the sides it is not brought from its centre stays over
+  that side. Walls round a floor hold the forks up, so there the crate goes
+  in once its bottom comes down to their top. Towards the sides it is not brought from its centre stays over
   the slots. Brought from an end of the vehicle, the crate goes to the free
   slot furthest in, and from a side to the nearest. A stack of two takes two
   free slots of one row, side by side, or the next slot by the same rule
@@ -46,7 +47,7 @@ AddVehicleFreight(vehicleid, 1558);
 ### `SetVehicleFreight`
 
 ```pawn
-forward bool:SetVehicleFreight(vehicleid, columns, rows, Float:x, Float:y, Float:floor, Float:columnGap, Float:rowGap, FREIGHT_SIDE:sides = FREIGHT_SIDE_BACK, bool:bed = false);
+forward bool:SetVehicleFreight(vehicleid, columns, rows, Float:x, Float:y, Float:floor, Float:columnGap, Float:rowGap, FREIGHT_SIDE:sides = FREIGHT_SIDE_BACK, bool:bed = false, Float:rim = 0.0);
 ```
 
 Set the grid of slots in the back of a vehicle. Freight already in it goes away.
@@ -63,6 +64,7 @@ Set the grid of slots in the back of a vehicle. Freight already in it goes away.
 | `rowGap` | Distance between rows, backwards. |
 | `sides` | The sides a forklift loads it from. |
 | `bed` | `true` for a flat bed the forks reach over, so a crate is lowered over the slots. |
+| `rim` | Height of the walls round the floor, such as a tailgate, from the floor. |
 
 **Returns**
 

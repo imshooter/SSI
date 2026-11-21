@@ -3,7 +3,7 @@
 > [!NOTE]
 > Experimental version, already running in production. Made with Claude Opus 5.5.
 
-SSI is a set of Pawn libraries for open.mp, built the way YSI is. The libraries live in the `SSI` folder, the inline versions of plugin functions in `SSI_Extra`, and the vehicle libraries in `SSI_Vehicle`. Each one is included by its folder and name:
+SSI is a set of Pawn libraries for open.mp, built the way YSI is. The libraries live in the `SSI` folder, the inline versions of plugin functions in `SSI_Extra`, the player libraries in `SSI_Player`, the vehicle libraries in `SSI_Vehicle`, and the libraries of the map in `SSI_World`. Each one is included by its folder and name:
 
 ```pawn
 #include <SSI\collection>
@@ -40,6 +40,7 @@ SSI is a set of Pawn libraries for open.mp, built the way YSI is. The libraries 
 | [test](SSI-test.md) | Tests, as in y_testing: functions declared with `test` that the script runs one after another when it starts, with checks that print what failed and where. |
 | [unique](SSI-unique.md) | Unique names: every `#include <SSI\unique>` moves on to a new suffix of two characters, and `SSI_UNIQUE<prefix...suffix>` writes the current one where the `...` is. |
 | [va](SSI-va.md) | Variable arguments: `___(n)` passes on the arguments a function got, from its `n`th on, anywhere among the arguments of a call, as y_va's `___`. |
+| [version](SSI-version.md) | The version shared by the SSI libraries and their startup banner. |
 
 ### SSI_Extra
 
@@ -52,6 +53,13 @@ SSI is a set of Pawn libraries for open.mp, built the way YSI is. The libraries 
 | [inline-object](SSI_Extra-inline-object.md) | Dynamic objects that call an inline when they finish moving, while a player edits them, or when a player selects one. |
 | [inline-pg](SSI_Extra-inline-pg.md) | Queries of the omp-postgresql component answered by an inline, with every value sent apart from the query, so nothing is ever escaped. |
 | [inline-timers](SSI_Extra-inline-timers.md) | Timers that call an inline. |
+
+### SSI_Player
+
+| Library | Description |
+| --- | --- |
+| [animation-preload](SSI_Player-animation-preload.md) | Animation libraries loaded ahead. |
+| [fps](SSI_Player-fps.md) | Frames per second of each player's game. |
 
 ### SSI_Vehicle
 
@@ -67,3 +75,10 @@ SSI is a set of Pawn libraries for open.mp, built the way YSI is. The libraries 
 | [objective](SSI_Vehicle-objective.md) | Marks the vehicle a player was sent to with the yellow arrow and a radar blip. |
 | [parts](SSI_Vehicle-parts.md) | The parts of a vehicle one at a time: some parameters, a door, window, tyre, lamp or panel is set while the others keep what the game has. |
 | [speed-camera](SSI_Vehicle-speed-camera.md) | Speed cameras: a pole by the road and a sphere of streamer area around it. |
+
+### SSI_World
+
+| Library | Description |
+| --- | --- |
+| [map-file](SSI_World-map-file.md) | Loads a map file kept in scriptfiles, so a map is changed without touching the gamemode. |
+| [zone](SSI_World-zone.md) | The named zones of the map of San Andreas, the ones the story mode writes at the corner of the screen. |

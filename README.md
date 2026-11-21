@@ -15,7 +15,7 @@ Simply install to your project:
 sampctl package install imshooter/SSI
 ```
 
-Or copy the `SSI`, `SSI_Extra` and `SSI_Vehicle` folders into the include folder of your compiler, such as `qawno/include`.
+Or copy the `SSI`, `SSI_Extra`, `SSI_Player`, `SSI_Vehicle` and `SSI_World` folders into the include folder of your compiler, such as `qawno/include`.
 
 Include in your code and begin using the library:
 
@@ -48,6 +48,7 @@ A file that declares hooks includes `SSI\hooks` after every other include. See [
 | [test](wiki/SSI-test.md) | Tests, as in y_testing: functions declared with `test` that the script runs one after another when it starts, with checks that print what failed and where. |
 | [unique](wiki/SSI-unique.md) | Unique names: every `#include <SSI\unique>` moves on to a new suffix of two characters, and `SSI_UNIQUE<prefix...suffix>` writes the current one where the `...` is. |
 | [va](wiki/SSI-va.md) | Variable arguments: `___(n)` passes on the arguments a function got, from its `n`th on, anywhere among the arguments of a call, as y_va's `___`. |
+| [version](wiki/SSI-version.md) | The version shared by the SSI libraries and their startup banner. |
 
 ### SSI_Extra
 
@@ -60,6 +61,13 @@ A file that declares hooks includes `SSI\hooks` after every other include. See [
 | [inline-object](wiki/SSI_Extra-inline-object.md) | Dynamic objects that call an inline when they finish moving, while a player edits them, or when a player selects one. |
 | [inline-pg](wiki/SSI_Extra-inline-pg.md) | Queries of the omp-postgresql component answered by an inline, with every value sent apart from the query, so nothing is ever escaped. |
 | [inline-timers](wiki/SSI_Extra-inline-timers.md) | Timers that call an inline. |
+
+### SSI_Player
+
+| Library | Description |
+| --- | --- |
+| [animation-preload](wiki/SSI_Player-animation-preload.md) | Animation libraries loaded ahead. |
+| [fps](wiki/SSI_Player-fps.md) | Frames per second of each player's game. |
 
 ### SSI_Vehicle
 
@@ -75,6 +83,13 @@ A file that declares hooks includes `SSI\hooks` after every other include. See [
 | [objective](wiki/SSI_Vehicle-objective.md) | Marks the vehicle a player was sent to with the yellow arrow and a radar blip. |
 | [parts](wiki/SSI_Vehicle-parts.md) | The parts of a vehicle one at a time: some parameters, a door, window, tyre, lamp or panel is set while the others keep what the game has. |
 | [speed-camera](wiki/SSI_Vehicle-speed-camera.md) | Speed cameras: a pole by the road and a sphere of streamer area around it. |
+
+### SSI_World
+
+| Library | Description |
+| --- | --- |
+| [map-file](wiki/SSI_World-map-file.md) | Loads a map file kept in scriptfiles, so a map is changed without touching the gamemode. |
+| [zone](wiki/SSI_World-zone.md) | The named zones of the map of San Andreas, the ones the story mode writes at the corner of the screen. |
 
 ## Documentation
 
@@ -102,3 +117,4 @@ SSI is released under the [MIT License](LICENSE), apart from `SSI_Vehicle\model`
 
 * [@Y-Less](https://github.com/Y-Less) for YSI, the model for the layout of this repository and for many of its interfaces, and for the vehicle data of y_vehicledata.
 * [@IllidanS4](https://github.com/IllidanS4) for PawnPlus, which `SSI\iterator` uses to follow vehicles and actors.
+* [@Southclaws](https://github.com/Southclaws) for samp-object-loader, the idea `SSI_World\map-file` follows.
