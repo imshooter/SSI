@@ -81,6 +81,10 @@
     #define SSI_HOOKS_CODE (8192)
 #endif
 
+#if SSI_HOOKS_CODE > 16384
+    #error SSI_HOOKS_CODE can be at most 16384.
+#endif
+
 #if !defined SSI_HOOKS_FUNCTIONS
     #define SSI_HOOKS_FUNCTIONS (64)
 #endif
