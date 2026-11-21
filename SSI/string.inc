@@ -4,6 +4,7 @@
 #define _INC_SSI_STRING
 
 #include <open.mp>
+#include <SSI\version>
 
 /**
  * Strings changed in place and compared, beyond the natives of open.mp:

@@ -3,6 +3,8 @@
 #endif
 #define _INC_SSI_QUEUE
 
+#include <SSI\version>
+
 /**
  * Queues hand out the rows of an array and take them back first in, first out.
  * The array is declared with the queue and read and written as any array, a row

@@ -1,3 +1,5 @@
+#include <SSI\version>
+
 /**
  * Unique names: every `#include <SSI\unique>` moves on to a new suffix
  * of two characters, and `SSI_UNIQUE<prefix...suffix>` writes the current one

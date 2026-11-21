@@ -3,6 +3,8 @@
 #endif
 #define _INC_SSI_AMX
 
+#include <SSI\version>
+
 /**
  * Access to the memory of the script beyond its data, for the libraries that
  * read or write code at run time: the code as the server relocated it, and the

@@ -3,6 +3,8 @@
 #endif
 #define _INC_SSI_COLLECTION
 
+#include <SSI\version>
+
 /**
  * Collections: the structures of these libraries under one name, as y_iterate
  * keeps every iterator under `Iterator:`. The brackets of the declaration pick
