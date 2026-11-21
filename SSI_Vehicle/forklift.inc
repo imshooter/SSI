@@ -17,9 +17,13 @@
  *   sits `FORKLIFT_FRAME_Y` ahead of the position of the vehicle and
  *   `FORKLIFT_FRAME_Z` above it with the forks down. A crate on the forks
  *   rises and falls with them once attached.
- * - The client does not report how high the forks are. The library works it
- *   out from how long the driver holds the fork keys, clamped at both ends,
- *   where the real forks stop too.
+ * - The client does not report how high the forks are. The library moves
+ *   them as the game does while the driver holds the fork keys: a position
+ *   from 0 to 2500, raised 10 and lowered 20 for each fiftieth of a second,
+ *   cut to whole steps each frame, so the driver's frame rate (from
+ *   `GetPlayerFPS`) sets the pace. It stops at both ends, as the real forks.
+ *   The forks seen leave the ground only past 500 and rise 1.2 m by 2500,
+ *   so they wait about a second before rising from the bottom.
  * - A crate is lifted when the forks rise under it: centred on them, turned
  *   with the forklift, and at the height of the forks. It then sits straight
  *   against the mast. A crate with one crate on it is lifted with that one,
@@ -43,10 +47,10 @@
 #include <streamer>
 #include <3DAndreas>
 #include <SSI_Extra\inline-timers>
+#include <SSI_Player\fps>
 
 #include <SSI\bits>
 #include <SSI\collection>
-#include <SSI\dictionary>
 #include <SSI\hooks>
 
 /**
@@ -55,6 +59,10 @@
 
 #if !defined MAX_CRATES
     #define MAX_CRATES (Crate:1024)
+#endif
+
+#if !defined CRATE_PHYSIC_IDENTIFIER
+    #define CRATE_PHYSIC_IDENTIFIER (0x637274)
 #endif
 
 #if !defined FORKLIFT_MODEL
@@ -86,15 +94,27 @@
 #endif
 
 #if !defined FORKLIFT_TRAVEL
-    #define FORKLIFT_TRAVEL (1.80)
+    #define FORKLIFT_TRAVEL (1.20)
 #endif
 
-#if !defined FORKLIFT_UP_SPEED
-    #define FORKLIFT_UP_SPEED (0.30)
+#if !defined FORKLIFT_POSITION_MAX
+    #define FORKLIFT_POSITION_MAX (2500)
 #endif
 
-#if !defined FORKLIFT_DOWN_SPEED
-    #define FORKLIFT_DOWN_SPEED (0.64)
+#if !defined FORKLIFT_POSITION_REST
+    #define FORKLIFT_POSITION_REST (500)
+#endif
+
+#if !defined FORKLIFT_RAISE_STEP
+    #define FORKLIFT_RAISE_STEP (10)
+#endif
+
+#if !defined FORKLIFT_LOWER_STEP
+    #define FORKLIFT_LOWER_STEP (20)
+#endif
+
+#if !defined FORKLIFT_DEFAULT_FPS
+    #define FORKLIFT_DEFAULT_FPS (50)
 #endif
 
 #if !defined FORKLIFT_REACH_SIDE
@@ -162,7 +182,9 @@ static enum _:E_CRATE_DATA {
 
 static enum _:E_FORKLIFT_DATA {
     Crate:E_FORKLIFT_CRATE,
+    Float:E_FORKLIFT_POSITION,
     Float:E_FORKLIFT_HEIGHT,
+    E_FORKLIFT_DRIVER,
     E_FORKLIFT_DIRECTION,
     E_FORKLIFT_MOVED,
     Timer:E_FORKLIFT_TIMER,
@@ -179,7 +201,6 @@ new
 
 static
     gCrateData[MAX_CRATES][E_CRATE_DATA],
-    Dictionary:CrateByPhysic<MAX_CRATES>,
     Bits:CrateTouched<MAX_CRATES>,
     gForkliftData[MAX_VEHICLES][E_FORKLIFT_DATA],
     gForkliftDriven[MAX_PLAYERS]
@@ -319,8 +340,8 @@ forward Crate:GetCrateBelow(Crate:crateid);
 forward Crate:GetCrateAbove(Crate:crateid);
 
 /**
- * @brief      How high the forks of a forklift are thought to be, from how
- *             long the fork keys were held.
+ * @brief      How high the forks of a forklift are, moved as the game moves
+ *             them while the driver holds the fork keys.
  *
  * @param      vehicleid  Vehicle to read.
  *
@@ -433,7 +454,7 @@ static stock PlaceCrateInternal(Crate:crateid, Float:x, Float:y, Float:z, Float:
     gCrateData[crateid][E_CRATE_BELOW] = belowid;
     gCrateData[crateid][E_CRATE_ABOVE] = INVALID_CRATE_ID;
 
-    Dictionary_Set(CrateByPhysic, _:physicid, _:crateid);
+    A3D_SetExtra(physicid, A3D_EXTRA_KEY(CRATE_PHYSIC_IDENTIFIER), _:crateid);
 
     if (belowid != INVALID_CRATE_ID) {
         gCrateData[belowid][E_CRATE_ABOVE] = crateid;
@@ -447,30 +468,37 @@ static stock RestoreCrateInternal(Crate:crateid) {
 }
 
 static stock Crate:GetPhysicCrateInternal(hitid) {
-    new
-        crateid = _:INVALID_CRATE_ID
-    ;
+    if (!A3D_HasExtra(Physic:hitid, A3D_EXTRA_KEY(CRATE_PHYSIC_IDENTIFIER))) {
+        return INVALID_CRATE_ID;
+    }
 
-    Dictionary_Get(CrateByPhysic, hitid, crateid);
-
-    return Crate:crateid;
+    return Crate:A3D_GetExtra(Physic:hitid, A3D_EXTRA_KEY(CRATE_PHYSIC_IDENTIFIER));
 }
 
+/**
+ * Moves the forks as the game did since the last call: each frame adds the
+ * step of the driver's frame time, cut to a whole number, and a frame lasts
+ * at most three fiftieths of a second.
+ */
 static stock UpdateForkInternal(vehicleid) {
     new const
         now = GetTickCount(),
         direction = gForkliftData[vehicleid][E_FORKLIFT_DIRECTION],
-        Float:speed = (direction > 0) ? FORKLIFT_UP_SPEED : FORKLIFT_DOWN_SPEED,
-        Float:height = gForkliftData[vehicleid][E_FORKLIFT_HEIGHT] + float(direction) * speed * float(now - gForkliftData[vehicleid][E_FORKLIFT_MOVED]) / 1000.0
+        measured = GetPlayerFPS(gForkliftData[vehicleid][E_FORKLIFT_DRIVER]),
+        fps = (measured > 0) ? measured : FORKLIFT_DEFAULT_FPS,
+        perFrame = (direction > 0) ? FORKLIFT_RAISE_STEP : FORKLIFT_LOWER_STEP,
+        step = (fps * 3 < 50) ? perFrame * 3 : perFrame * 50 / fps,
+        Float:position = gForkliftData[vehicleid][E_FORKLIFT_POSITION] + float(direction * step * fps) * float(now - gForkliftData[vehicleid][E_FORKLIFT_MOVED]) / 1000.0,
+        Float:clamped = (position < 0.0) ? 0.0 : ((position > float(FORKLIFT_POSITION_MAX)) ? float(FORKLIFT_POSITION_MAX) : position)
     ;
 
-    gForkliftData[vehicleid][E_FORKLIFT_HEIGHT] = (height < 0.0) ? 0.0 : ((height > FORKLIFT_TRAVEL) ? FORKLIFT_TRAVEL : height);
+    gForkliftData[vehicleid][E_FORKLIFT_POSITION] = clamped;
+    gForkliftData[vehicleid][E_FORKLIFT_HEIGHT] = (clamped > float(FORKLIFT_POSITION_REST)) ? (clamped - float(FORKLIFT_POSITION_REST)) * FORKLIFT_TRAVEL / float(FORKLIFT_POSITION_MAX - FORKLIFT_POSITION_REST) : 0.0;
     gForkliftData[vehicleid][E_FORKLIFT_MOVED] = now;
 }
 
 static stock AttachCrateInternal(Crate:crateid, vehicleid, Float:seatY, Float:seatTurn, Float:lift) {
     if (gCrateData[crateid][E_CRATE_PHYSIC] != INVALID_PHYSIC_ID) {
-        Dictionary_Remove(CrateByPhysic, _:gCrateData[crateid][E_CRATE_PHYSIC]);
         A3D_DestroyObject(gCrateData[crateid][E_CRATE_PHYSIC]);
     }
 
@@ -711,7 +739,9 @@ static stock ClearForkliftInternal(vehicleid) {
     }
 
     gForkliftData[vehicleid][E_FORKLIFT_CRATE] = INVALID_CRATE_ID;
+    gForkliftData[vehicleid][E_FORKLIFT_POSITION] = 0.0;
     gForkliftData[vehicleid][E_FORKLIFT_HEIGHT] = 0.0;
+    gForkliftData[vehicleid][E_FORKLIFT_DRIVER] = INVALID_PLAYER_ID;
     gForkliftData[vehicleid][E_FORKLIFT_DIRECTION] = 0;
     gForkliftData[vehicleid][E_FORKLIFT_MOVED] = 0;
     gForkliftData[vehicleid][E_FORKLIFT_TIMER] = INVALID_TIMER_ID;
@@ -774,6 +804,7 @@ static stock ResetForkliftInternal(vehicleid) {
 
     gForkliftData[vehicleid][E_FORKLIFT_TIMER] = INVALID_TIMER_ID;
     gForkliftData[vehicleid][E_FORKLIFT_DIRECTION] = 0;
+    gForkliftData[vehicleid][E_FORKLIFT_POSITION] = 0.0;
     gForkliftData[vehicleid][E_FORKLIFT_HEIGHT] = 0.0;
 }
 
@@ -959,7 +990,6 @@ stock bool:DestroyCrate(Crate:crateid) {
     }
 
     if (gCrateData[crateid][E_CRATE_PHYSIC] != INVALID_PHYSIC_ID) {
-        Dictionary_Remove(CrateByPhysic, _:gCrateData[crateid][E_CRATE_PHYSIC]);
         A3D_DestroyObject(gCrateData[crateid][E_CRATE_PHYSIC]);
     }
 
@@ -1063,6 +1093,8 @@ hook OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys) {
     if (direction == gForkliftData[vehicleid][E_FORKLIFT_DIRECTION]) {
         return 1;
     }
+
+    gForkliftData[vehicleid][E_FORKLIFT_DRIVER] = playerid;
 
     MoveForkInternal(vehicleid, direction);
 
