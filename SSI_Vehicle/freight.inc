@@ -22,7 +22,8 @@
  *   that side the crate may stay outside the vehicle, its edge at most
  *   `FREIGHT_REACH` from the end of the vehicle model. On a flat bed the
  *   forks reach over, and half the crate at least is over the outer slots on
- *   that side. Towards the sides it is not brought from its centre stays over
+ *   that side. Walls round a floor hold the forks up, so there the crate goes
+ *   in once its bottom comes down to their top. Towards the sides it is not brought from its centre stays over
  *   the slots. Brought from an end of the vehicle, the crate goes to the free
  *   slot furthest in, and from a side to the nearest. A stack of two takes two
  *   free slots of one row, side by side, or the next slot by the same rule
@@ -71,6 +72,7 @@ static enum _:E_FREIGHT_DATA {
     Float:E_FREIGHT_X,
     Float:E_FREIGHT_Y,
     Float:E_FREIGHT_FLOOR,
+    Float:E_FREIGHT_RIM,
     Float:E_FREIGHT_COLUMN_GAP,
     Float:E_FREIGHT_ROW_GAP,
     Float:E_FREIGHT_RIGHT,
@@ -116,6 +118,8 @@ static
  * @param      sides      The sides a forklift loads it from.
  * @param      bed        `true` for a flat bed the forks reach over, so a
  *                        crate is lowered over the slots.
+ * @param      rim        Height of the walls round the floor, such as a
+ *                        tailgate, from the floor.
  *
  * @return     - `true` it was set
  *             - `false` when:
@@ -123,7 +127,7 @@ static
  *                 + `columns` or `rows` is below 1
  *                 + there are more than `MAX_FREIGHT_SLOTS` slots
  */
-forward bool:SetVehicleFreight(vehicleid, columns, rows, Float:x, Float:y, Float:floor, Float:columnGap, Float:rowGap, FREIGHT_SIDE:sides = FREIGHT_SIDE_BACK, bool:bed = false);
+forward bool:SetVehicleFreight(vehicleid, columns, rows, Float:x, Float:y, Float:floor, Float:columnGap, Float:rowGap, FREIGHT_SIDE:sides = FREIGHT_SIDE_BACK, bool:bed = false, Float:rim = 0.0);
 
 /**
  * @brief      Put a piece of freight in the back of a vehicle.
@@ -281,7 +285,7 @@ static stock ResetFreightInternal(vehicleid) {
  * # External
  */
 
-stock bool:SetVehicleFreight(vehicleid, columns, rows, Float:x, Float:y, Float:floor, Float:columnGap, Float:rowGap, FREIGHT_SIDE:sides = FREIGHT_SIDE_BACK, bool:bed = false) {
+stock bool:SetVehicleFreight(vehicleid, columns, rows, Float:x, Float:y, Float:floor, Float:columnGap, Float:rowGap, FREIGHT_SIDE:sides = FREIGHT_SIDE_BACK, bool:bed = false, Float:rim = 0.0) {
     if (!IsValidVehicle(vehicleid)) {
         return false;
     }
@@ -312,6 +316,7 @@ stock bool:SetVehicleFreight(vehicleid, columns, rows, Float:x, Float:y, Float:f
     gFreightData[vehicleid][E_FREIGHT_X] = x;
     gFreightData[vehicleid][E_FREIGHT_Y] = y;
     gFreightData[vehicleid][E_FREIGHT_FLOOR] = floor;
+    gFreightData[vehicleid][E_FREIGHT_RIM] = rim;
     gFreightData[vehicleid][E_FREIGHT_COLUMN_GAP] = columnGap;
     gFreightData[vehicleid][E_FREIGHT_ROW_GAP] = rowGap;
     gFreightData[vehicleid][E_FREIGHT_RIGHT] = x + float(columns - 1) * columnGap;
@@ -366,7 +371,7 @@ stock AddVehicleFreight(vehicleid, modelid, slot = -1) {
     );
 
     gFreightData[vehicleid][E_FREIGHT_OBJECT][slot] = objectid;
-    ++gFreightData[vehicleid][E_FREIGHT_COUNT];
+    gFreightData[vehicleid][E_FREIGHT_COUNT] += 1;
 
     return slot;
 }
@@ -383,7 +388,7 @@ stock bool:RemoveVehicleFreight(vehicleid, slot) {
     DestroyDynamicObject(gFreightData[vehicleid][E_FREIGHT_OBJECT][slot]);
 
     gFreightData[vehicleid][E_FREIGHT_OBJECT][slot] = STREAMER_TAG_OBJECT:INVALID_STREAMER_ID;
-    --gFreightData[vehicleid][E_FREIGHT_COUNT];
+    gFreightData[vehicleid][E_FREIGHT_COUNT] -= 1;
 
     return true;
 }
@@ -521,7 +526,7 @@ stock bool:IsVehicleFreightOpen(vehicleid) {
 
             A3D_GetVehiclePositionOffset(freightid, x, y, z, offsetX, offsetY, offsetZ);
 
-            if (!(gFreightData[freightid][E_FREIGHT_FLOOR] - FREIGHT_FLOOR_REACH <= offsetZ <= gFreightData[freightid][E_FREIGHT_FLOOR] + FORKLIFT_DROP_GAP)) {
+            if (!(gFreightData[freightid][E_FREIGHT_FLOOR] - FREIGHT_FLOOR_REACH <= offsetZ <= gFreightData[freightid][E_FREIGHT_FLOOR] + gFreightData[freightid][E_FREIGHT_RIM] + FORKLIFT_DROP_GAP)) {
                 continue;
             }
 
