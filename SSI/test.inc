@@ -645,11 +645,7 @@ stock SSI@Test_Near(Float:got, Float:want, Float:range, line, const text[]) {
 stock SSI@Test_Same(const got[], const want[], bool:same, line, const text[]) {
     ++SSI@testChecks;
 
-    new const
-        bool:equal = strequal(got, want)
-    ;
-
-    if (equal == same) {
+    if (strequal(got, want) == same) {
         return;
     }
 

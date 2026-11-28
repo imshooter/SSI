@@ -540,13 +540,9 @@ static stock SSI_InlineParamsInternal(InlineClosure:slot) {
     ;
 
     for (new i; i != count; ++i) {
-        new
-            source = __emit(const.pri SSI@inlineZero)
+        new const
+            source = (i < given) ? SSI@Amx_Read(SSI@inlineCaller + 16 + i * 4) : __emit(const.pri SSI@inlineZero)
         ;
-
-        if (i < given) {
-            source = SSI@Amx_Read(SSI@inlineCaller + 16 + i * 4);
-        }
 
         SSI_InlineParamInternal(base + SSI@inlineParamAt[site][i], source, SSI@inlineParam[site][i]);
     }

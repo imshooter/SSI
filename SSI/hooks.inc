@@ -639,7 +639,7 @@ static stock SSI_HooksOpcodesInternal() {
     SSI@hookCells[SSI@hookCellCount][0] = SSI@hookCasetbl;
     SSI@hookCells[SSI@hookCellCount++][1] = SSI_OP_CASETBL;
 
-    for (new i = 1; i < SSI@hookCellCount; ++i) {
+    for (new i = 1; i != SSI@hookCellCount; ++i) {
         new const
             cell = SSI@hookCells[i][0],
             opcode = SSI@hookCells[i][1]
@@ -1147,11 +1147,7 @@ static stock SSI_HooksBuildInternal(bool:apply) {
     ;
 
     for (new i; i != SSI@hookCount; ++i) {
-        new const
-            address = SSI@Amx_Read(SSI_HooksEntryInternal(i))
-        ;
-
-        if (!(low <= address < high)) {
+        if (!(low <= SSI@Amx_Read(SSI_HooksEntryInternal(i)) < high)) {
             continue;
         }
 

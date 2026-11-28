@@ -201,10 +201,9 @@ stock Bits_Count(const bits[], size = sizeof (bits)) {
 
     for (new cell; cell != size; ++cell) {
         new
-            word = bits[cell]
+            word = bits[cell] - ((bits[cell] >>> 1) & 0x55555555)
         ;
 
-        word = word - ((word >>> 1) & 0x55555555);
         word = (word & 0x33333333) + ((word >>> 2) & 0x33333333);
         count += (((word + (word >>> 4)) & 0x0F0F0F0F) * 0x01010101) >>> 24;
     }
