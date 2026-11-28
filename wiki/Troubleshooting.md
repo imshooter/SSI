@@ -22,9 +22,9 @@ Dynamic areas of the streamer, for example, need a public `OnPlayerConnect` in t
 
 Both libraries rename the same callbacks. Use one of them in the script.
 
-## `cannot read from file: "PawnPlus"`
+## `cannot read from file` on the include of a plugin
 
-`SSI\iterator` needs the PawnPlus include and plugin. Libraries in `SSI_Extra` need the include of the plugin or component they wrap. See [Installation](Installation.md).
+Libraries in `SSI_Extra` need the include of the plugin or component they wrap. See [Installation](Installation.md).
 
 ## The compiler stops, hangs or runs out of memory on a macro
 

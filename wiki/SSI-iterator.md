@@ -8,7 +8,6 @@
 
 - `SSI\hooks`
 - `SSI\collection`
-- [PawnPlus](https://github.com/IllidanS4/PawnPlus)
 
 ## Quick Start
 
@@ -40,16 +39,19 @@ foreach (new vehicleid : StreamedVehicle[playerid]) {
 
 A player is added on `OnPlayerConnect` and removed after every hook and the
 public of `OnPlayerDisconnect` have run, so all of them still walk the
-player who is leaving. Vehicles and actors are tracked by PawnPlus filters
-that run after the natives that create and destroy them, whichever script
-calls them. Those that already exist when the script starts are counted too.
-The ids are plain numbers, so the loop variable has no tag.
+player who is leaving. Vehicles and actors are tracked by hooks of the
+natives that create and destroy them, and each script with this file tells
+the others by `CallRemoteFunction`, so all of them see every one. Those that
+already exist when the script starts are counted too, but one a script
+without this file makes later is not. The ids are plain numbers, so the loop
+variable has no tag.
 `Collection_Count`, `Collection_Contains` and the other calls read these
 collections, and only this file changes them.
 
 It also has the iterator functions of y_foreach, walked the same way:
 `Range`, `N`, `Powers`, `Fib`, `Random`, `Null`, `NonNull`, `Until`,
-`Filter`, `VehicleOccupant`, `VehicleDriver` and `VehiclePassenger`.
+`Filter`, `VehicleOccupant`, `VehicleDriver`, `VehiclePassenger`, and
+`PlayerExcept` and `CharacterExcept`, which leave one player out.
 
 ```pawn
 foreach (new i : Range(10, 100, 2)) {
@@ -210,3 +212,24 @@ Walk the passengers of a vehicle, or of every vehicle.
 | Parameter | Description |
 | --- | --- |
 | `vehicleid` | The vehicle, or every vehicle when left out. |
+
+### `PlayerExcept@SSI_loop`
+
+Walk the players but one.
+
+```pawn
+foreach (new otherid : PlayerExcept(playerid)) {
+}
+```
+
+| Parameter | Description |
+| --- | --- |
+| `playerid` | The player left out. |
+
+### `CharacterExcept@SSI_loop`
+
+Walk the players and NPCs but one.
+
+| Parameter | Description |
+| --- | --- |
+| `playerid` | The player or NPC left out. |

@@ -4,7 +4,6 @@
 #define _INC_SSI_ITERATOR
 
 #include <open.mp>
-#include <PawnPlus>
 #include <SSI\hooks>
 #include <SSI\collection>
 
@@ -35,16 +34,19 @@
  *
  * A player is added on `OnPlayerConnect` and removed after every hook and the
  * public of `OnPlayerDisconnect` have run, so all of them still walk the
- * player who is leaving. Vehicles and actors are tracked by PawnPlus filters
- * that run after the natives that create and destroy them, whichever script
- * calls them. Those that already exist when the script starts are counted too.
- * The ids are plain numbers, so the loop variable has no tag.
+ * player who is leaving. Vehicles and actors are tracked by hooks of the
+ * natives that create and destroy them, and each script with this file tells
+ * the others by `CallRemoteFunction`, so all of them see every one. Those that
+ * already exist when the script starts are counted too, but one a script
+ * without this file makes later is not. The ids are plain numbers, so the loop
+ * variable has no tag.
  * `Collection_Count`, `Collection_Contains` and the other calls read these
  * collections, and only this file changes them.
  *
  * It also has the iterator functions of y_foreach, walked the same way:
  * `Range`, `N`, `Powers`, `Fib`, `Random`, `Null`, `NonNull`, `Until`,
- * `Filter`, `VehicleOccupant`, `VehicleDriver` and `VehiclePassenger`.
+ * `Filter`, `VehicleOccupant`, `VehicleDriver`, `VehiclePassenger`, and
+ * `PlayerExcept` and `CharacterExcept`, which leave one player out.
  *
  *     foreach (new i : Range(10, 100, 2)) {
  *     }
@@ -110,13 +112,20 @@ new
  */
 
 forward @SSI_RconLogin();
-forward @SSI_AdminSet(&bool:set, &playerid, &bool:admin);
-forward @SSI_VehicleCreated(&vehicleid);
-forward @SSI_VehicleDestroyed(&bool:destroyed, &vehicleid);
-forward @SSI_ActorCreated(&actorid);
-forward @SSI_ActorDestroyed(&bool:destroyed, &actorid);
+forward @SSI_AdminSet(playerid, bool:admin);
+forward @SSI_VehicleCreated(vehicleid);
+forward @SSI_VehicleDestroyed(vehicleid);
+forward @SSI_ActorCreated(actorid);
+forward @SSI_ActorDestroyed(actorid);
 
-forward _pp@on_init@SSI_Iterator();
+static stock AddLocalVehicleInternal(vehicleid) {
+    if (!IsValidVehicle(vehicleid)) {
+        return;
+    }
+
+    Collection_Add(LocalVehicle, vehicleid);
+    CallRemoteFunction("@SSI_VehicleCreated", "i", vehicleid);
+}
 
 static stock ForgetCharacterInternal(playerid) {
     Collection_Remove(Character, playerid);
@@ -315,11 +324,10 @@ stock SSI@VehicleOccupant(vehicleid = INVALID_VEHICLE_ID, bool:driver = true, bo
 
         for (new playerid = Character@SSI_next[(SSI@carry == -1) ? anchor : SSI@carry]; playerid != anchor; playerid = Character@SSI_next[playerid]) {
             new const
-                PLAYER_STATE:status = GetPlayerState(playerid),
-                bool:seated = (status == PLAYER_STATE_DRIVER) ? driver : (passenger && status == PLAYER_STATE_PASSENGER)
+                PLAYER_STATE:status = GetPlayerState(playerid)
             ;
 
-            if (!seated) {
+            if (!((status == PLAYER_STATE_DRIVER) ? driver : (passenger && status == PLAYER_STATE_PASSENGER))) {
                 continue;
             }
 
@@ -366,6 +374,38 @@ stock SSI@VehicleDriver(vehicleid = INVALID_VEHICLE_ID) {
 
 stock SSI@VehiclePassenger(vehicleid = INVALID_VEHICLE_ID) {
     return SSI@VehicleOccupant(vehicleid, false, true);
+}
+
+stock SSI@PlayerExcept(playerid) {
+    new const
+        anchor = sizeof (Player@SSI_next) - 1
+    ;
+
+    for (new otherid = Player@SSI_next[(SSI@carry == -1) ? anchor : SSI@carry]; otherid != anchor; otherid = Player@SSI_next[otherid]) {
+        if (otherid != playerid) {
+            SSI@carry = otherid;
+
+            return otherid;
+        }
+    }
+
+    return INVALID_PLAYER_ID;
+}
+
+stock SSI@CharacterExcept(playerid) {
+    new const
+        anchor = sizeof (Character@SSI_next) - 1
+    ;
+
+    for (new otherid = Character@SSI_next[(SSI@carry == -1) ? anchor : SSI@carry]; otherid != anchor; otherid = Character@SSI_next[otherid]) {
+        if (otherid != playerid) {
+            SSI@carry = otherid;
+
+            return otherid;
+        }
+    }
+
+    return INVALID_PLAYER_ID;
 }
 
 /**
@@ -508,6 +548,23 @@ stock SSI@VehiclePassenger(vehicleid = INVALID_VEHICLE_ID) {
  */
 #define VehiclePassenger@SSI_loop|||%9|||%1|||(%3)||| SSI_OCCUPANT|||SSI@VehiclePassenger|||%9|||%1|||(%3)|||
 
+/**
+ * @brief      Walk the players but one.
+ *
+ *     foreach (new otherid : PlayerExcept(playerid)) {
+ *     }
+ *
+ * @param      playerid  The player left out.
+ */
+#define PlayerExcept@SSI_loop|||%9|||%1|||(%3)||| SSI_OCCUPANT|||SSI@PlayerExcept|||%9|||%1|||(%3)|||
+
+/**
+ * @brief      Walk the players and NPCs but one.
+ *
+ * @param      playerid  The player or NPC left out.
+ */
+#define CharacterExcept@SSI_loop|||%9|||%1|||(%3)||| SSI_OCCUPANT|||SSI@CharacterExcept|||%9|||%1|||(%3)|||
+
 #define SSI_OCCUPANT|||%8|||%9|||%1|||(%3)||| %9%1,SSI@state%1=-1;(SSI@carry=SSI@state%1,%1=%9(%8(%3)),SSI@state%1=SSI@carry,_:%1)!=INVALID_PLAYER_ID;
 
 /**
@@ -570,23 +627,80 @@ hook OnRconLoginAttempt(ip[], password[], success) {
     return 1;
 }
 
-public _pp@on_init@SSI_Iterator() {
-    pawn_add_filter("SetPlayerAdmin", "-", "@SSI_AdminSet", filter_out);
-    pawn_add_filter("CreateVehicle", "-", "@SSI_VehicleCreated", filter_out);
-    pawn_add_filter("AddStaticVehicle", "-", "@SSI_VehicleCreated", filter_out);
-    pawn_add_filter("AddStaticVehicleEx", "-", "@SSI_VehicleCreated", filter_out);
-    pawn_add_filter("DestroyVehicle", "-", "@SSI_VehicleDestroyed", filter_out);
-    pawn_add_filter("CreateActor", "-", "@SSI_ActorCreated", filter_out);
-    pawn_add_filter("DestroyActor", "-", "@SSI_ActorDestroyed", filter_out);
-
-    return 1;
-}
-
-public @SSI_AdminSet(&bool:set, &playerid, &bool:admin) {
-    if (!set) {
-        return 1;
+hook native bool:SetPlayerAdmin(playerid, bool:admin) {
+    if (!SetPlayerAdmin(playerid, admin)) {
+        return false;
     }
 
+    CallRemoteFunction("@SSI_AdminSet", "ii", playerid, admin);
+
+    return true;
+}
+
+hook native CreateVehicle(modelid, Float:spawnX, Float:spawnY, Float:spawnZ, Float:angle, colour1, colour2, respawnDelay, bool:addSiren = false) {
+    new const
+        vehicleid = CreateVehicle(modelid, spawnX, spawnY, spawnZ, angle, colour1, colour2, respawnDelay, addSiren)
+    ;
+
+    AddLocalVehicleInternal(vehicleid);
+
+    return vehicleid;
+}
+
+hook native AddStaticVehicle(modelid, Float:spawnX, Float:spawnY, Float:spawnZ, Float:angle, colour1, colour2) {
+    new const
+        vehicleid = AddStaticVehicle(modelid, spawnX, spawnY, spawnZ, angle, colour1, colour2)
+    ;
+
+    AddLocalVehicleInternal(vehicleid);
+
+    return vehicleid;
+}
+
+hook native AddStaticVehicleEx(modelid, Float:spawnX, Float:spawnY, Float:spawnZ, Float:angle, colour1, colour2, respawnDelay, bool:addSiren = false) {
+    new const
+        vehicleid = AddStaticVehicleEx(modelid, spawnX, spawnY, spawnZ, angle, colour1, colour2, respawnDelay, addSiren)
+    ;
+
+    AddLocalVehicleInternal(vehicleid);
+
+    return vehicleid;
+}
+
+hook native bool:DestroyVehicle(vehicleid) {
+    if (!DestroyVehicle(vehicleid)) {
+        return false;
+    }
+
+    CallRemoteFunction("@SSI_VehicleDestroyed", "i", vehicleid);
+
+    return true;
+}
+
+hook native CreateActor(skin, Float:x, Float:y, Float:z, Float:angle) {
+    new const
+        actorid = CreateActor(skin, x, y, z, angle)
+    ;
+
+    if (IsValidActor(actorid)) {
+        Collection_Add(LocalActor, actorid);
+        CallRemoteFunction("@SSI_ActorCreated", "i", actorid);
+    }
+
+    return actorid;
+}
+
+hook native bool:DestroyActor(actorid) {
+    if (!DestroyActor(actorid)) {
+        return false;
+    }
+
+    CallRemoteFunction("@SSI_ActorDestroyed", "i", actorid);
+
+    return true;
+}
+
+public @SSI_AdminSet(playerid, bool:admin) {
     if (admin && Collection_Contains(Player, playerid)) {
         Collection_Add(RconAdmin, playerid);
     } else {
@@ -596,25 +710,13 @@ public @SSI_AdminSet(&bool:set, &playerid, &bool:admin) {
     return 1;
 }
 
-public @SSI_VehicleCreated(&vehicleid) {
-    if (!IsValidVehicle(vehicleid)) {
-        return 1;
-    }
-
+public @SSI_VehicleCreated(vehicleid) {
     Collection_Add(Vehicle, vehicleid);
-
-    if (amx_source() == amx_this()) {
-        Collection_Add(LocalVehicle, vehicleid);
-    }
 
     return 1;
 }
 
-public @SSI_VehicleDestroyed(&bool:destroyed, &vehicleid) {
-    if (!destroyed) {
-        return 1;
-    }
-
+public @SSI_VehicleDestroyed(vehicleid) {
     Collection_Remove(Vehicle, vehicleid);
     Collection_Remove(LocalVehicle, vehicleid);
 
@@ -627,25 +729,13 @@ public @SSI_VehicleDestroyed(&bool:destroyed, &vehicleid) {
     return 1;
 }
 
-public @SSI_ActorCreated(&actorid) {
-    if (!IsValidActor(actorid)) {
-        return 1;
-    }
-
+public @SSI_ActorCreated(actorid) {
     Collection_Add(Actor, actorid);
-
-    if (amx_source() == amx_this()) {
-        Collection_Add(LocalActor, actorid);
-    }
 
     return 1;
 }
 
-public @SSI_ActorDestroyed(&bool:destroyed, &actorid) {
-    if (!destroyed) {
-        return 1;
-    }
-
+public @SSI_ActorDestroyed(actorid) {
     Collection_Remove(Actor, actorid);
     Collection_Remove(LocalActor, actorid);
 

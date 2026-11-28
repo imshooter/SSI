@@ -44,7 +44,6 @@ Most libraries need nothing beyond open.mp. These need a plugin or component:
 
 | Library | Needs |
 | --- | --- |
-| `SSI\iterator` | [PawnPlus](https://github.com/IllidanS4/PawnPlus) |
 | `SSI_Extra\inline-object` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin) |
 | `SSI_Extra\inline-mysql` | [MySQL](https://github.com/imshooter/MySQL) |
 | `SSI_Extra\inline-bcrypt` | [samp-bcrypt](https://github.com/Sreyas-Sreelal/samp-bcrypt) |
@@ -53,7 +52,7 @@ Most libraries need nothing beyond open.mp. These need a plugin or component:
 | `SSI_Vehicle\objective`, `SSI_Vehicle\neon`, `SSI_Vehicle\speed-camera` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin) |
 | `SSI_Vehicle\forklift` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin), [3DAndreas](https://github.com/imshooter/3DAndreas) 0.8.2 or later |
 | `SSI_World\zone` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin) |
-| `SSI_World\map-file` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin), and [PawnPlus](https://github.com/IllidanS4/PawnPlus) through `SSI\iterator` |
+| `SSI_World\map-file` | [streamer](https://github.com/samp-incognito/samp-streamer-plugin) |
 
 `SSI\group` allows and denies commands only when `SSI\command` is included before it.
 

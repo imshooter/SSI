@@ -116,5 +116,4 @@ SSI is released under the [MIT License](LICENSE), apart from `SSI_Vehicle\model`
 ## Thanks to
 
 * [@Y-Less](https://github.com/Y-Less) for YSI, the model for the layout of this repository and for many of its interfaces, and for the vehicle data of y_vehicledata.
-* [@IllidanS4](https://github.com/IllidanS4) for PawnPlus, which `SSI\iterator` uses to follow vehicles and actors.
 * [@Southclaws](https://github.com/Southclaws) for samp-object-loader, the idea `SSI_World\map-file` follows.
