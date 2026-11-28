@@ -89,7 +89,7 @@ new
     Collection:GroupMember[MAX_GROUPS]<MAX_PLAYERS>
 ;
 
-#define GroupMember: _:
+#define GroupMember:SSI@tag _:
 
 static
     gGroupData[MAX_GROUPS][E_GROUP_DATA],

@@ -56,14 +56,16 @@ cases. Using both in one collection breaks its stack of free ids.
 The ids of a pool carry the tag of the collection, and the calls check it.
 The values of groups are plain numbers, and `Collection_Alloc` gives them the
 tag of the collection. A collection of plain numbers, such as the players of
-iterator.inc, defines its tag away after the declaration:
+iterator.inc, defines its tag away after the declaration, or to another tag
+the same way. Only the tag the calls write is changed, so a `Player:` written
+anywhere else is still a tag:
 
 ```pawn
 new
     Collection:Player<MAX_PLAYERS>
 ;
 
-#define Player: _:
+#define Player:SSI@tag _:
 ```
 
 `Name<>` names a group collection where the group does not matter. A group

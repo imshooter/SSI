@@ -42,10 +42,10 @@ foreach (new House:houseid : OwnedHouse[playerid]) {
 An id handed out by a collection carries the name of the collection as its tag, and the calls check it. A collection that holds values of another tag says so with a define after its declaration:
 
 ```pawn
-#define OwnedHouse: House:
+#define OwnedHouse:SSI@tag House:
 ```
 
-A collection of plain numbers writes `#define Name: _:`. Sizes and indexes may carry any tag.
+A collection of plain numbers writes `#define Name:SSI@tag _:`. Only the tag the calls write changes, so a `Name:` written anywhere else is still a tag. Sizes and indexes may carry any tag.
 
 ## Events
 

@@ -50,13 +50,15 @@
  * The ids of a pool carry the tag of the collection, and the calls check it.
  * The values of groups are plain numbers, and `Collection_Alloc` gives them the
  * tag of the collection. A collection of plain numbers, such as the players of
- * iterator.inc, defines its tag away after the declaration:
+ * iterator.inc, defines its tag away after the declaration, or to another tag
+ * the same way. Only the tag the calls write is changed, so a `Player:` written
+ * anywhere else is still a tag:
  *
  *     new
  *         Collection:Player<MAX_PLAYERS>
  *     ;
  *
- *     #define Player: _:
+ *     #define Player:SSI@tag _:
  *
  * `Name<>` names a group collection where the group does not matter. A group
  * is read between angle brackets, so it is a variable or an expression without
@@ -82,6 +84,12 @@
 #if !defined SSI@whole
     const SSI@whole = 0;
 #endif
+
+/**
+ * Follows the tag of a collection wherever the calls write it, and is written
+ * away. `#define Name:SSI@tag _:` matches it there and nowhere else.
+ */
+#define SSI@tag
 
 /**
  * Makes `Collection:collection<>` in the forwards below a plain parameter, so
@@ -347,9 +355,9 @@ forward Collection_Redeem(Collection:collection<>, ticket);
 #define SSI_FOREACH_FF|||%0|||%3|||%1|||%5||| SSI_FOREACH_P%5|||%0|||%1|||
 #define SSI_FOREACH_JI|||%0|||%3|||%1||| %0@SSI_loop|||_:|||%1|||%3|||
 #define SSI_FOREACH_J:%2|||%0|||%3|||%1||| %0@SSI_loop|||%2:|||%1|||%3|||
-#define SSI_FOREACH_PI|||%0|||%1||| %0:%1=%0:(sizeof %0@SSI_next-1);_:(%1=%0:%0@SSI_next[_:%1])!=sizeof %0@SSI_next-1;
+#define SSI_FOREACH_PI|||%0|||%1||| %0:SSI@tag %1=%0:SSI@tag (sizeof %0@SSI_next-1);_:(%1=%0:SSI@tag %0@SSI_next[_:%1])!=sizeof %0@SSI_next-1;
 #define SSI_FOREACH_P:%2|||%0|||%1||| %2:%1=%2:(sizeof %0@SSI_next-1);_:(%1=%2:%0@SSI_next[_:%1])!=sizeof %0@SSI_next-1;
-#define SSI_FOREACH_II|||%0|||(%3)|||%1||| %0:%1=%0:(sizeof %0@SSI_next[]-1);_:(%1=%0:%0@SSI_next[(%3)][_:%1])!=sizeof %0@SSI_next[]-1;
+#define SSI_FOREACH_II|||%0|||(%3)|||%1||| %0:SSI@tag %1=%0:SSI@tag (sizeof %0@SSI_next[]-1);_:(%1=%0:SSI@tag %0@SSI_next[(%3)][_:%1])!=sizeof %0@SSI_next[]-1;
 #define SSI_FOREACH_I:%2|||%0|||(%3)|||%1||| %2:%1=%2:(sizeof %0@SSI_next[]-1);_:(%1=%2:%0@SSI_next[(%3)][_:%1])!=sizeof %0@SSI_next[]-1;
 #define SSI_FOREACH_GI|||%0|||(%3)|||%1||| %1=sizeof %0@SSI_group+_:(%3);(%1=%0@SSI_next[%1])!=sizeof %0@SSI_group+_:(%3);
 #define SSI_FOREACH_G:%2|||%0|||(%3)|||%1||| %2:%1=%2:(sizeof %0@SSI_group+_:(%3));_:(%1=%2:%0@SSI_next[_:%1])!=sizeof %0@SSI_group+_:(%3);
@@ -1178,18 +1186,18 @@ stock SSI@Count_Next(const count[], length, index, low, high) {
     %0@SSI_count, \
     %0@SSI_free
 
-#define SSI_HandlePool_Alloc(%0) (%0:SSI@HandlePool_Alloc(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1))
-#define SSI_HandlePool_Add(%0,%1) SSI@HandlePool_Add(%0@SSI_count, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
-#define SSI_HandlePool_Remove(%0,%1) SSI@HandlePool_Remove(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)), sizeof %0@SSI_prev != sizeof %0@SSI_next)
-#define SSI_HandlePool_Retire(%0,%1) SSI@HandlePool_Retire(%0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)), sizeof %0@SSI_prev != sizeof %0@SSI_next)
-#define SSI_HandlePool_Recycle(%0,%1) SSI@HandlePool_Recycle(%0@SSI_count, %0@SSI_free, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
-#define SSI_HandlePool_Contains(%0,%1) SSI@HandlePool_Contains(%0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
+#define SSI_HandlePool_Alloc(%0) (%0:SSI@tag SSI@HandlePool_Alloc(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1))
+#define SSI_HandlePool_Add(%0,%1) SSI@HandlePool_Add(%0@SSI_count, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@tag SSI@id = (%1)))
+#define SSI_HandlePool_Remove(%0,%1) SSI@HandlePool_Remove(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@tag SSI@id = (%1)), sizeof %0@SSI_prev != sizeof %0@SSI_next)
+#define SSI_HandlePool_Retire(%0,%1) SSI@HandlePool_Retire(%0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@tag SSI@id = (%1)), sizeof %0@SSI_prev != sizeof %0@SSI_next)
+#define SSI_HandlePool_Recycle(%0,%1) SSI@HandlePool_Recycle(%0@SSI_count, %0@SSI_free, %0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@tag SSI@id = (%1)))
+#define SSI_HandlePool_Contains(%0,%1) SSI@HandlePool_Contains(%0@SSI_prev, sizeof %0@SSI_next - 1, _:(%0:SSI@tag SSI@id = (%1)))
 #define SSI_HandlePool_Count(%0) (%0@SSI_count)
 #define SSI_HandlePool_Clear(%0) SSI@HandlePool_Clear(%0@SSI_count, %0@SSI_free, %0@SSI_next, %0@SSI_prev, sizeof %0@SSI_next - 1, sizeof %0@SSI_prev != sizeof %0@SSI_next)
-#define SSI_HandlePool_Generation(%0,%1) SSI@HandlePool_Generation(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
-#define SSI_HandlePool_Alive(%0,%1,%2) SSI@HandlePool_Alive(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)), %2)
-#define SSI_HandlePool_Ticket(%0,%1) SSI@HandlePool_Ticket(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, _:(%0:SSI@id = (%1)))
-#define SSI_HandlePool_Redeem(%0,%1) (%0:SSI@HandlePool_Redeem(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, %1))
+#define SSI_HandlePool_Generation(%0,%1) SSI@HandlePool_Generation(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, _:(%0:SSI@tag SSI@id = (%1)))
+#define SSI_HandlePool_Alive(%0,%1,%2) SSI@HandlePool_Alive(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, _:(%0:SSI@tag SSI@id = (%1)), %2)
+#define SSI_HandlePool_Ticket(%0,%1) SSI@HandlePool_Ticket(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, _:(%0:SSI@tag SSI@id = (%1)))
+#define SSI_HandlePool_Redeem(%0,%1) (%0:SSI@tag SSI@HandlePool_Redeem(%0@SSI_prev, %0@SSI_prev[sizeof %0@SSI_next], sizeof %0@SSI_next - 1, %1))
 
 /**
  * `Name[COUNT]<SIZE>` is an indexed pool: a handle pool for each index, kept
@@ -1204,12 +1212,12 @@ stock SSI@Count_Next(const count[], length, index, low, high) {
     %0@SSI_count[%1], \
     %0@SSI_free[%1]
 
-#define SSI_IndexedPool_Alloc(%0,%1) (%0:((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? SSI@HandlePool_Alloc(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1) : -1))
-#define SSI_IndexedPool_Add(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Add(%0@SSI_count[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, _:(%0:SSI@id = (%2))))
-#define SSI_IndexedPool_Remove(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Remove(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, _:(%0:SSI@id = (%2)), false))
-#define SSI_IndexedPool_Retire(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Retire(%0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, _:(%0:SSI@id = (%2)), false))
-#define SSI_IndexedPool_Recycle(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Recycle(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_prev[] - 1, _:(%0:SSI@id = (%2))))
-#define SSI_IndexedPool_Contains(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Contains(%0@SSI_prev[(%1)], sizeof %0@SSI_prev[] - 1, _:(%0:SSI@id = (%2))))
+#define SSI_IndexedPool_Alloc(%0,%1) (%0:SSI@tag ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? SSI@HandlePool_Alloc(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1) : -1))
+#define SSI_IndexedPool_Add(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Add(%0@SSI_count[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, _:(%0:SSI@tag SSI@id = (%2))))
+#define SSI_IndexedPool_Remove(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Remove(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, _:(%0:SSI@tag SSI@id = (%2)), false))
+#define SSI_IndexedPool_Retire(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Retire(%0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, _:(%0:SSI@tag SSI@id = (%2)), false))
+#define SSI_IndexedPool_Recycle(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Recycle(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_prev[] - 1, _:(%0:SSI@tag SSI@id = (%2))))
+#define SSI_IndexedPool_Contains(%0,%1,%2) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Contains(%0@SSI_prev[(%1)], sizeof %0@SSI_prev[] - 1, _:(%0:SSI@tag SSI@id = (%2))))
 #define SSI_IndexedPool_Count(%0,%1) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) ? %0@SSI_count[(%1)] : 0)
 #define SSI_IndexedPool_Clear(%0,%1) ((0 <= (SSI@index = _:(%1)) < sizeof %0@SSI_count) && SSI@HandlePool_Clear(%0@SSI_count[(%1)], %0@SSI_free[(%1)], %0@SSI_next[(%1)], %0@SSI_prev[(%1)], sizeof %0@SSI_next[] - 1, false))
 
@@ -1231,7 +1239,7 @@ stock SSI@Count_Next(const count[], length, index, low, high) {
     %0@SSI_count[_:(%1)], \
     %0@SSI_free[2] = { -1, 0 }
 
-#define SSI_GroupPool_Alloc(%0,%1) (%0:SSI@GroupPool_Alloc(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_free[0], %0@SSI_free[1], sizeof %0@SSI_group, sizeof %0@SSI_count, _:(%1)))
+#define SSI_GroupPool_Alloc(%0,%1) (%0:SSI@tag SSI@GroupPool_Alloc(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_free[0], %0@SSI_free[1], sizeof %0@SSI_group, sizeof %0@SSI_count, _:(%1)))
 #define SSI_GroupPool_Add(%0,%1,%2) SSI@GroupPool_Add(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, sizeof %0@SSI_group, sizeof %0@SSI_count, _:(%1), _:(%2))
 #define SSI_GroupPool_Remove(%0,%1,%2) SSI@GroupPool_Remove(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_free[0], sizeof %0@SSI_group, _:(%2))
 #define SSI_GroupPool_Clear(%0,%1) SSI@GroupPool_Clear(%0@SSI_next, %0@SSI_prev, %0@SSI_group, %0@SSI_count, %0@SSI_free[0], sizeof %0@SSI_group, sizeof %0@SSI_count, _:(%1))

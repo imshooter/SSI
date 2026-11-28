@@ -91,7 +91,7 @@ static
     Collection:FreightOpen<MAX_VEHICLES>
 ;
 
-#define FreightOpen: _:
+#define FreightOpen:SSI@tag _:
 
 #if defined _INC_SSI_VEHICLE_FORKLIFT
     static

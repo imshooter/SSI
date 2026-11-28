@@ -70,20 +70,20 @@ new
     Collection:LocalActor<MAX_ACTORS>
 ;
 
-#define Player: _:
-#define Bot: _:
-#define Character: _:
-#define RconAdmin: _:
-#define Vehicle: _:
-#define LocalVehicle: _:
-#define Actor: _:
-#define LocalActor: _:
+#define Player:SSI@tag _:
+#define Bot:SSI@tag _:
+#define Character:SSI@tag _:
+#define RconAdmin:SSI@tag _:
+#define Vehicle:SSI@tag _:
+#define LocalVehicle:SSI@tag _:
+#define Actor:SSI@tag _:
+#define LocalActor:SSI@tag _:
 
 #define NPC@SSI_next Bot@SSI_next
 #define NPC@SSI_prev Bot@SSI_prev
 #define NPC@SSI_count Bot@SSI_count
 #define NPC@SSI_free Bot@SSI_free
-#define NPC: _:
+#define NPC:SSI@tag _:
 
 #if defined SSI_ITERATOR_STREAMED
     new
@@ -94,11 +94,11 @@ new
         Collection:StreamedActor[MAX_PLAYERS]<MAX_ACTORS>
     ;
 
-    #define StreamedPlayer: _:
-    #define StreamedBot: _:
-    #define StreamedCharacter: _:
-    #define StreamedVehicle: _:
-    #define StreamedActor: _:
+    #define StreamedPlayer:SSI@tag _:
+    #define StreamedBot:SSI@tag _:
+    #define StreamedCharacter:SSI@tag _:
+    #define StreamedVehicle:SSI@tag _:
+    #define StreamedActor:SSI@tag _:
 #endif
 
 #if !defined SSI@carry
