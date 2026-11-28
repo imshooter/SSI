@@ -182,7 +182,7 @@ static enum _:E_CRATE_DATA {
 
 static enum _:E_FORKLIFT_DATA {
     Crate:E_FORKLIFT_CRATE,
-    Float:E_FORKLIFT_POSITION,
+    E_FORKLIFT_POSITION,
     Float:E_FORKLIFT_HEIGHT,
     E_FORKLIFT_DRIVER,
     E_FORKLIFT_DIRECTION,
@@ -427,32 +427,39 @@ event OnCrateReturned(Crate:crateid, vehicleid);
 
 static stock PlaceCrateInternal(Crate:crateid, Float:x, Float:y, Float:z, Float:angle, Crate:belowid) {
     new const
-        modelid = gCrateData[crateid][E_CRATE_MODEL],
-        worldid = gCrateData[crateid][E_CRATE_WORLD],
-        interiorid = gCrateData[crateid][E_CRATE_INTERIOR],
-        Float:originZ = z - gCrateData[crateid][E_CRATE_BOTTOM],
+        modelid       = gCrateData[crateid][E_CRATE_MODEL],
+        worldid       = gCrateData[crateid][E_CRATE_WORLD],
+        interiorid    = gCrateData[crateid][E_CRATE_INTERIOR],
+        Float:width   = gCrateData[crateid][E_CRATE_WIDTH],
+        Float:depth   = gCrateData[crateid][E_CRATE_DEPTH],
+        Float:bottom  = gCrateData[crateid][E_CRATE_BOTTOM],
+        Float:top     = gCrateData[crateid][E_CRATE_TOP],
         Float:centerX = gCrateData[crateid][E_CRATE_CENTER_X],
-        Float:centerY = gCrateData[crateid][E_CRATE_CENTER_Y],
-        Physic:physicid = A3D_CreateStaticBox(
-            gCrateData[crateid][E_CRATE_WIDTH] * 2.0,
-            gCrateData[crateid][E_CRATE_DEPTH] * 2.0,
-            gCrateData[crateid][E_CRATE_TOP] - gCrateData[crateid][E_CRATE_BOTTOM],
-            x + centerX * floatcos(angle, degrees) - centerY * floatsin(angle, degrees),
-            y + centerX * floatsin(angle, degrees) + centerY * floatcos(angle, degrees),
-            originZ + (gCrateData[crateid][E_CRATE_TOP] + gCrateData[crateid][E_CRATE_BOTTOM]) * 0.5,
-            0.0, 0.0, angle, worldid, interiorid
-        )
+        Float:centerY = gCrateData[crateid][E_CRATE_CENTER_Y]
     ;
 
-    gCrateData[crateid][E_CRATE_OBJECT] = CreateDynamicObject(modelid, x, y, originZ, 0.0, 0.0, angle, worldid, interiorid);
-    gCrateData[crateid][E_CRATE_PHYSIC] = physicid;
-    gCrateData[crateid][E_CRATE_X] = x;
-    gCrateData[crateid][E_CRATE_Y] = y;
-    gCrateData[crateid][E_CRATE_Z] = originZ;
-    gCrateData[crateid][E_CRATE_ANGLE] = angle;
+    new const
+        Float:cosine  = floatcos(angle, degrees),
+        Float:sine    = floatsin(angle, degrees),
+        Float:originZ = z - bottom,
+        Float:boxX    = x + centerX * cosine - centerY * sine,
+        Float:boxY    = y + centerX * sine + centerY * cosine,
+        Float:boxZ    = originZ + (top + bottom) * 0.5
+    ;
+
+    new const
+        Physic:physicid = A3D_CreateStaticBox(width * 2.0, depth * 2.0, top - bottom, boxX, boxY, boxZ, 0.0, 0.0, angle, worldid, interiorid)
+    ;
+
+    gCrateData[crateid][E_CRATE_OBJECT]  = CreateDynamicObject(modelid, x, y, originZ, 0.0, 0.0, angle, worldid, interiorid);
+    gCrateData[crateid][E_CRATE_PHYSIC]  = physicid;
+    gCrateData[crateid][E_CRATE_X]       = x;
+    gCrateData[crateid][E_CRATE_Y]       = y;
+    gCrateData[crateid][E_CRATE_Z]       = originZ;
+    gCrateData[crateid][E_CRATE_ANGLE]   = angle;
     gCrateData[crateid][E_CRATE_VEHICLE] = INVALID_VEHICLE_ID;
-    gCrateData[crateid][E_CRATE_BELOW] = belowid;
-    gCrateData[crateid][E_CRATE_ABOVE] = INVALID_CRATE_ID;
+    gCrateData[crateid][E_CRATE_BELOW]   = belowid;
+    gCrateData[crateid][E_CRATE_ABOVE]   = INVALID_CRATE_ID;
 
     A3D_SetExtra(physicid, A3D_EXTRA_KEY(CRATE_PHYSIC_IDENTIFIER), _:crateid);
 
@@ -462,9 +469,19 @@ static stock PlaceCrateInternal(Crate:crateid, Float:x, Float:y, Float:z, Float:
 }
 
 static stock RestoreCrateInternal(Crate:crateid) {
+    new const
+        modelid     = gCrateData[crateid][E_CRATE_MODEL],
+        worldid     = gCrateData[crateid][E_CRATE_WORLD],
+        interiorid  = gCrateData[crateid][E_CRATE_INTERIOR],
+        Float:x     = gCrateData[crateid][E_CRATE_X],
+        Float:y     = gCrateData[crateid][E_CRATE_Y],
+        Float:z     = gCrateData[crateid][E_CRATE_Z],
+        Float:angle = gCrateData[crateid][E_CRATE_ANGLE]
+    ;
+
     DestroyDynamicObject(gCrateData[crateid][E_CRATE_OBJECT]);
 
-    gCrateData[crateid][E_CRATE_OBJECT] = CreateDynamicObject(gCrateData[crateid][E_CRATE_MODEL], gCrateData[crateid][E_CRATE_X], gCrateData[crateid][E_CRATE_Y], gCrateData[crateid][E_CRATE_Z], 0.0, 0.0, gCrateData[crateid][E_CRATE_ANGLE], gCrateData[crateid][E_CRATE_WORLD], gCrateData[crateid][E_CRATE_INTERIOR]);
+    gCrateData[crateid][E_CRATE_OBJECT] = CreateDynamicObject(modelid, x, y, z, 0.0, 0.0, angle, worldid, interiorid);
 }
 
 static stock Crate:GetPhysicCrateInternal(hitid) {
@@ -482,37 +499,63 @@ static stock Crate:GetPhysicCrateInternal(hitid) {
  */
 static stock UpdateForkInternal(vehicleid) {
     new const
-        now = GetTickCount(),
-        direction = gForkliftData[vehicleid][E_FORKLIFT_DIRECTION],
-        measured = GetPlayerFPS(gForkliftData[vehicleid][E_FORKLIFT_DRIVER]),
-        fps = (measured > 0) ? measured : FORKLIFT_DEFAULT_FPS,
-        perFrame = (direction > 0) ? FORKLIFT_RAISE_STEP : FORKLIFT_LOWER_STEP,
-        step = (fps * 3 < 50) ? perFrame * 3 : perFrame * 50 / fps,
-        Float:position = gForkliftData[vehicleid][E_FORKLIFT_POSITION] + float(direction * step * fps) * float(now - gForkliftData[vehicleid][E_FORKLIFT_MOVED]) / 1000.0,
-        Float:clamped = (position < 0.0) ? 0.0 : ((position > float(FORKLIFT_POSITION_MAX)) ? float(FORKLIFT_POSITION_MAX) : position)
+        now       = GetTickCount(),
+        elapsed   = now - gForkliftData[vehicleid][E_FORKLIFT_MOVED],
+        direction = gForkliftData[vehicleid][E_FORKLIFT_DIRECTION]
     ;
 
-    gForkliftData[vehicleid][E_FORKLIFT_POSITION] = clamped;
-    gForkliftData[vehicleid][E_FORKLIFT_HEIGHT] = (clamped > float(FORKLIFT_POSITION_REST)) ? (clamped - float(FORKLIFT_POSITION_REST)) * FORKLIFT_TRAVEL / float(FORKLIFT_POSITION_MAX - FORKLIFT_POSITION_REST) : 0.0;
     gForkliftData[vehicleid][E_FORKLIFT_MOVED] = now;
+
+    if (direction == 0) {
+        return;
+    }
+
+    new const
+        measured  = GetPlayerFPS(gForkliftData[vehicleid][E_FORKLIFT_DRIVER]),
+        fps       = (measured > 0) ? measured : FORKLIFT_DEFAULT_FPS,
+        step      = (direction > 0) ? FORKLIFT_RAISE_STEP : FORKLIFT_LOWER_STEP,
+        frameStep = min(step * 50 / fps, step * 3),
+        distance  = frameStep * fps * elapsed / 1000
+    ;
+
+    new const
+        position = clamp(gForkliftData[vehicleid][E_FORKLIFT_POSITION] + direction * distance, 0, FORKLIFT_POSITION_MAX),
+        raised   = max(position - FORKLIFT_POSITION_REST, 0)
+    ;
+
+    gForkliftData[vehicleid][E_FORKLIFT_POSITION] = position;
+    gForkliftData[vehicleid][E_FORKLIFT_HEIGHT]   = float(raised) * FORKLIFT_TRAVEL / float(FORKLIFT_POSITION_MAX - FORKLIFT_POSITION_REST);
 }
 
 static stock AttachCrateInternal(Crate:crateid, vehicleid, Float:seatY, Float:seatTurn, Float:lift) {
-    if (gCrateData[crateid][E_CRATE_PHYSIC] != INVALID_PHYSIC_ID) {
-        A3D_DestroyObject(gCrateData[crateid][E_CRATE_PHYSIC]);
+    new const
+        Physic:physicid = gCrateData[crateid][E_CRATE_PHYSIC],
+        Float:frameY    = seatY - FORKLIFT_FRAME_Y,
+        Float:frameZ    = FORKLIFT_FORK_TOP + lift - gCrateData[crateid][E_CRATE_BOTTOM]
+    ;
+
+    if (physicid != INVALID_PHYSIC_ID) {
+        A3D_DestroyObject(physicid);
     }
 
     Bits_Vet(CrateTouched, crateid);
-    AttachDynamicObjectToVehicle(gCrateData[crateid][E_CRATE_OBJECT], vehicleid, FORKLIFT_SEAT_X, seatY - FORKLIFT_FRAME_Y, FORKLIFT_FORK_TOP + lift - gCrateData[crateid][E_CRATE_BOTTOM], 0.0, 0.0, seatTurn);
+    AttachDynamicObjectToVehicle(gCrateData[crateid][E_CRATE_OBJECT], vehicleid, FORKLIFT_SEAT_X, frameY, frameZ, 0.0, 0.0, seatTurn);
 
-    gCrateData[crateid][E_CRATE_PHYSIC] = INVALID_PHYSIC_ID;
-    gCrateData[crateid][E_CRATE_VEHICLE] = vehicleid;
+    gCrateData[crateid][E_CRATE_PHYSIC]   = INVALID_PHYSIC_ID;
+    gCrateData[crateid][E_CRATE_VEHICLE]  = vehicleid;
     gCrateData[crateid][E_CRATE_OFFSET_X] = FORKLIFT_SEAT_X;
     gCrateData[crateid][E_CRATE_OFFSET_Y] = seatY;
-    gCrateData[crateid][E_CRATE_TURN] = seatTurn;
+    gCrateData[crateid][E_CRATE_TURN]     = seatTurn;
 }
 
 static stock bool:LiftCrateInternal(vehicleid) {
+    new const
+        worldid          = GetVehicleVirtualWorld(vehicleid),
+        interiorid       = GetVehicleInterior(vehicleid),
+        Float:forkTop    = FORKLIFT_FRAME_Z + FORKLIFT_FORK_TOP + gForkliftData[vehicleid][E_FORKLIFT_HEIGHT],
+        Float:forkMiddle = FORKLIFT_MAST_Y + FORKLIFT_FORK_LENGTH * 0.5
+    ;
+
     new
         Float:angle,
         Float:x,
@@ -523,16 +566,17 @@ static stock bool:LiftCrateInternal(vehicleid) {
     ;
 
     GetVehicleZAngle(vehicleid, angle);
+    A3D_GetVehicleOffsetPosition(vehicleid, 0.0, forkMiddle, forkTop + 0.5, x, y, z);
 
-    new const
-        Float:forkTop = FORKLIFT_FRAME_Z + FORKLIFT_FORK_TOP + gForkliftData[vehicleid][E_FORKLIFT_HEIGHT]
-    ;
-
-    A3D_GetVehicleOffsetPosition(vehicleid, 0.0, FORKLIFT_MAST_Y + FORKLIFT_FORK_LENGTH * 0.5, forkTop + 0.5, x, y, z);
-
-    new const
-        count = A3D_OverlapBox(1.0, FORKLIFT_FORK_LENGTH, 1.0, x, y, z, 0.0, 0.0, angle, types, hits, .worldid = GetVehicleVirtualWorld(vehicleid), .flags = A3D_COLLIDE_STATIC, .interiorid = GetVehicleInterior(vehicleid))
-    ;
+    new const count = A3D_OverlapBox(
+        1.0, FORKLIFT_FORK_LENGTH, 1.0,
+        x, y, z,
+        0.0, 0.0, angle,
+        types, hits,
+        .worldid    = worldid,
+        .flags      = A3D_COLLIDE_STATIC,
+        .interiorid = interiorid
+    );
 
     for (new i; i != count; ++i) {
         new const
@@ -551,23 +595,35 @@ static stock bool:LiftCrateInternal(vehicleid) {
             continue;
         }
 
+        new const
+            Float:crateX      = gCrateData[crateid][E_CRATE_X],
+            Float:crateY      = gCrateData[crateid][E_CRATE_Y],
+            Float:crateZ      = gCrateData[crateid][E_CRATE_Z],
+            Float:crateAngle  = gCrateData[crateid][E_CRATE_ANGLE],
+            Float:crateWidth  = gCrateData[crateid][E_CRATE_WIDTH],
+            Float:crateDepth  = gCrateData[crateid][E_CRATE_DEPTH],
+            Float:crateBottom = gCrateData[crateid][E_CRATE_BOTTOM],
+            Float:crateTop    = gCrateData[crateid][E_CRATE_TOP]
+        ;
+
         new
             Float:offsetX,
             Float:offsetY,
             Float:offsetZ
         ;
 
-        A3D_GetVehiclePositionOffset(vehicleid, gCrateData[crateid][E_CRATE_X], gCrateData[crateid][E_CRATE_Y], gCrateData[crateid][E_CRATE_Z], offsetX, offsetY, offsetZ);
+        A3D_GetVehiclePositionOffset(vehicleid, crateX, crateY, crateZ, offsetX, offsetY, offsetZ);
 
         new const
-            Float:turn = gCrateData[crateid][E_CRATE_ANGLE] - angle,
-            quarter = floatround(turn / 90.0),
-            Float:depth = (quarter & 1) ? gCrateData[crateid][E_CRATE_WIDTH] : gCrateData[crateid][E_CRATE_DEPTH],
-            Float:rear = offsetY - depth,
-            Float:bottom = offsetZ + gCrateData[crateid][E_CRATE_BOTTOM]
+            Float:turn     = crateAngle - angle,
+            quarter        = floatround(turn / 90.0),
+            Float:seatTurn = float(quarter) * 90.0,
+            Float:extent   = (quarter & 1) ? crateWidth : crateDepth,
+            Float:rear     = offsetY - extent,
+            Float:bottom   = offsetZ + crateBottom
         ;
 
-        if (floatabs(turn - float(quarter) * 90.0) > FORKLIFT_REACH_TURN) {
+        if (floatabs(turn - seatTurn) > FORKLIFT_REACH_TURN) {
             continue;
         }
 
@@ -575,7 +631,7 @@ static stock bool:LiftCrateInternal(vehicleid) {
             continue;
         }
 
-        if (!(FORKLIFT_MAST_Y - 0.15 <= rear <= FORKLIFT_MAST_Y + FORKLIFT_FORK_LENGTH * 0.5)) {
+        if (!(FORKLIFT_MAST_Y - 0.15 <= rear <= forkMiddle)) {
             continue;
         }
 
@@ -593,8 +649,7 @@ static stock bool:LiftCrateInternal(vehicleid) {
 
         new const
             Crate:belowid = gCrateData[crateid][E_CRATE_BELOW],
-            Float:seatY = FORKLIFT_MAST_Y + depth,
-            Float:seatTurn = float(quarter) * 90.0
+            Float:seatY   = FORKLIFT_MAST_Y + extent
         ;
 
         if (belowid != INVALID_CRATE_ID) {
@@ -607,7 +662,12 @@ static stock bool:LiftCrateInternal(vehicleid) {
         gForkliftData[vehicleid][E_FORKLIFT_CRATE] = crateid;
 
         if (aboveid != INVALID_CRATE_ID) {
-            AttachCrateInternal(aboveid, vehicleid, seatY, seatTurn + gCrateData[aboveid][E_CRATE_ANGLE] - gCrateData[crateid][E_CRATE_ANGLE], gCrateData[crateid][E_CRATE_TOP] - gCrateData[crateid][E_CRATE_BOTTOM]);
+            new const
+                Float:aboveTurn = seatTurn + gCrateData[aboveid][E_CRATE_ANGLE] - crateAngle,
+                Float:aboveLift = crateTop - crateBottom
+            ;
+
+            AttachCrateInternal(aboveid, vehicleid, seatY, aboveTurn, aboveLift);
         }
 
         call OnCrateLifted(crateid, vehicleid);
@@ -625,10 +685,19 @@ static stock bool:LiftCrateInternal(vehicleid) {
 static stock bool:LowerCrateInternal(vehicleid, bool:forced) {
     new const
         Crate:crateid = gForkliftData[vehicleid][E_FORKLIFT_CRATE],
+        Float:height  = gForkliftData[vehicleid][E_FORKLIFT_HEIGHT]
+    ;
+
+    new const
         Crate:aboveid = gCrateData[crateid][E_CRATE_ABOVE],
-        worldid = gCrateData[crateid][E_CRATE_WORLD],
-        interiorid = gCrateData[crateid][E_CRATE_INTERIOR],
-        Float:height = gForkliftData[vehicleid][E_FORKLIFT_HEIGHT]
+        modelid       = gCrateData[crateid][E_CRATE_MODEL],
+        worldid       = gCrateData[crateid][E_CRATE_WORLD],
+        interiorid    = gCrateData[crateid][E_CRATE_INTERIOR],
+        Float:offsetX = gCrateData[crateid][E_CRATE_OFFSET_X],
+        Float:offsetY = gCrateData[crateid][E_CRATE_OFFSET_Y],
+        Float:turn    = gCrateData[crateid][E_CRATE_TURN],
+        Float:bottom  = gCrateData[crateid][E_CRATE_BOTTOM],
+        Float:top     = gCrateData[crateid][E_CRATE_TOP]
     ;
 
     new
@@ -644,13 +713,20 @@ static stock bool:LowerCrateInternal(vehicleid, bool:forced) {
     ;
 
     GetVehicleZAngle(vehicleid, angle);
-    A3D_GetVehicleOffsetPosition(vehicleid, gCrateData[crateid][E_CRATE_OFFSET_X], gCrateData[crateid][E_CRATE_OFFSET_Y], FORKLIFT_FRAME_Z + FORKLIFT_FORK_TOP + height, x, y, z);
+    A3D_GetVehicleOffsetPosition(vehicleid, offsetX, offsetY, FORKLIFT_FRAME_Z + FORKLIFT_FORK_TOP + height, x, y, z);
 
     if (!forced && call OnCrateLower(crateid, vehicleid, x, y, z)) {
         return true;
     }
 
-    if (!A3D_RayCast(x, y, z + 0.05, x, y, z - FORKLIFT_TRAVEL - 2.0, hitX, hitY, hitZ, type, hitid, .worldid = worldid, .flags = A3D_COLLIDE_MAP | A3D_COLLIDE_STATIC, .interiorid = interiorid)) {
+    if (!A3D_RayCast(
+        x, y, z + 0.05,
+        x, y, z - FORKLIFT_TRAVEL - 2.0,
+        hitX, hitY, hitZ, type, hitid,
+        .worldid    = worldid,
+        .flags      = A3D_COLLIDE_MAP | A3D_COLLIDE_STATIC,
+        .interiorid = interiorid
+    )) {
         if (!forced) {
             return false;
         }
@@ -664,14 +740,32 @@ static stock bool:LowerCrateInternal(vehicleid, bool:forced) {
 
     new const
         Crate:belowid = (type == A3D_HIT_STATIC) ? GetPhysicCrateInternal(hitid) : INVALID_CRATE_ID,
-        Float:turned = angle + gCrateData[crateid][E_CRATE_TURN],
-        bool:lined = belowid != INVALID_CRATE_ID && VectorSize(gCrateData[belowid][E_CRATE_X] - x, gCrateData[belowid][E_CRATE_Y] - y, 0.0) <= FORKLIFT_STACK_SNAP,
-        Float:crateX = lined ? gCrateData[belowid][E_CRATE_X] : x,
-        Float:crateY = lined ? gCrateData[belowid][E_CRATE_Y] : y,
-        Float:crateAngle = lined ? gCrateData[belowid][E_CRATE_ANGLE] + float(floatround((turned - gCrateData[belowid][E_CRATE_ANGLE]) / 90.0)) * 90.0 : turned
+        bool:stacked  = belowid != INVALID_CRATE_ID,
+        Float:turned  = angle + turn
     ;
 
-    if (!forced && A3D_IsModelColliding(gCrateData[crateid][E_CRATE_MODEL], crateX, crateY, hitZ - gCrateData[crateid][E_CRATE_BOTTOM] + 0.03, 0.0, 0.0, crateAngle, worldid, A3D_COLLIDE_MAP | A3D_COLLIDE_STATIC, interiorid)) {
+    new const
+        Float:lineX     = stacked ? gCrateData[belowid][E_CRATE_X] : x,
+        Float:lineY     = stacked ? gCrateData[belowid][E_CRATE_Y] : y,
+        Float:lineAngle = stacked ? gCrateData[belowid][E_CRATE_ANGLE] : turned,
+        bool:lined      = stacked && VectorSize(lineX - x, lineY - y, 0.0) <= FORKLIFT_STACK_SNAP
+    ;
+
+    new const
+        Float:crateX     = lined ? lineX : x,
+        Float:crateY     = lined ? lineY : y,
+        Float:snapAngle  = lined ? lineAngle : turned,
+        Float:crateAngle = snapAngle + float(floatround((turned - snapAngle) / 90.0)) * 90.0
+    ;
+
+    if (!forced && A3D_IsModelColliding(
+        modelid,
+        crateX, crateY, hitZ - bottom + 0.03,
+        .rz         = crateAngle,
+        .worldid    = worldid,
+        .flags      = A3D_COLLIDE_MAP | A3D_COLLIDE_STATIC,
+        .interiorid = interiorid
+    )) {
         return false;
     }
 
@@ -685,8 +779,13 @@ static stock bool:LowerCrateInternal(vehicleid, bool:forced) {
     gForkliftData[vehicleid][E_FORKLIFT_CRATE] = INVALID_CRATE_ID;
 
     if (aboveid != INVALID_CRATE_ID) {
+        new const
+            Float:aboveZ     = hitZ + top - bottom,
+            Float:aboveAngle = crateAngle + gCrateData[aboveid][E_CRATE_TURN] - turn
+        ;
+
         DestroyDynamicObject(gCrateData[aboveid][E_CRATE_OBJECT]);
-        PlaceCrateInternal(aboveid, crateX, crateY, hitZ + gCrateData[crateid][E_CRATE_TOP] - gCrateData[crateid][E_CRATE_BOTTOM], crateAngle + gCrateData[aboveid][E_CRATE_TURN] - gCrateData[crateid][E_CRATE_TURN], crateid);
+        PlaceCrateInternal(aboveid, crateX, crateY, aboveZ, aboveAngle, crateid);
     }
 
     call OnCrateDropped(crateid, vehicleid, belowid);
@@ -702,7 +801,7 @@ static stock StepForkliftInternal(vehicleid) {
     UpdateForkInternal(vehicleid);
 
     new const
-        direction = gForkliftData[vehicleid][E_FORKLIFT_DIRECTION],
+        direction     = gForkliftData[vehicleid][E_FORKLIFT_DIRECTION],
         bool:carrying = gForkliftData[vehicleid][E_FORKLIFT_CRATE] != INVALID_CRATE_ID
     ;
 
@@ -724,7 +823,7 @@ static stock MoveForkInternal(vehicleid, direction) {
     Timer_Stop(gForkliftData[vehicleid][E_FORKLIFT_TIMER]);
 
     gForkliftData[vehicleid][E_FORKLIFT_DIRECTION] = direction;
-    gForkliftData[vehicleid][E_FORKLIFT_TIMER] = (direction == 0)
+    gForkliftData[vehicleid][E_FORKLIFT_TIMER]     = (direction == 0)
         ? INVALID_TIMER_ID
         : Timer_StartInline(EBC(Vehicle:vehicleid, using inline OnStep), FORKLIFT_STEP);
 
@@ -738,13 +837,13 @@ static stock ClearForkliftInternal(vehicleid) {
         return;
     }
 
-    gForkliftData[vehicleid][E_FORKLIFT_CRATE] = INVALID_CRATE_ID;
-    gForkliftData[vehicleid][E_FORKLIFT_POSITION] = 0.0;
-    gForkliftData[vehicleid][E_FORKLIFT_HEIGHT] = 0.0;
-    gForkliftData[vehicleid][E_FORKLIFT_DRIVER] = INVALID_PLAYER_ID;
-    gForkliftData[vehicleid][E_FORKLIFT_DIRECTION] = 0;
-    gForkliftData[vehicleid][E_FORKLIFT_MOVED] = 0;
-    gForkliftData[vehicleid][E_FORKLIFT_TIMER] = INVALID_TIMER_ID;
+    gForkliftData[vehicleid][E_FORKLIFT_CRATE]       = INVALID_CRATE_ID;
+    gForkliftData[vehicleid][E_FORKLIFT_POSITION]    = 0;
+    gForkliftData[vehicleid][E_FORKLIFT_HEIGHT]      = 0.0;
+    gForkliftData[vehicleid][E_FORKLIFT_DRIVER]      = INVALID_PLAYER_ID;
+    gForkliftData[vehicleid][E_FORKLIFT_DIRECTION]   = 0;
+    gForkliftData[vehicleid][E_FORKLIFT_MOVED]       = 0;
+    gForkliftData[vehicleid][E_FORKLIFT_TIMER]       = INVALID_TIMER_ID;
     gForkliftData[vehicleid][E_FORKLIFT_TOUCH_TIMER] = INVALID_TIMER_ID;
 }
 
@@ -755,14 +854,25 @@ static stock ResetForkliftInternal(vehicleid) {
 
     if (crateid != INVALID_CRATE_ID) {
         new const
-            worldid = gCrateData[crateid][E_CRATE_WORLD],
-            interiorid = gCrateData[crateid][E_CRATE_INTERIOR],
-            Float:x = gCrateData[crateid][E_CRATE_X],
-            Float:y = gCrateData[crateid][E_CRATE_Y],
-            Float:bottom = gCrateData[crateid][E_CRATE_Z] + gCrateData[crateid][E_CRATE_BOTTOM]
+            Crate:aboveid = gCrateData[crateid][E_CRATE_ABOVE],
+            modelid       = gCrateData[crateid][E_CRATE_MODEL],
+            worldid       = gCrateData[crateid][E_CRATE_WORLD],
+            interiorid    = gCrateData[crateid][E_CRATE_INTERIOR],
+            Float:x       = gCrateData[crateid][E_CRATE_X],
+            Float:y       = gCrateData[crateid][E_CRATE_Y],
+            Float:z       = gCrateData[crateid][E_CRATE_Z],
+            Float:angle   = gCrateData[crateid][E_CRATE_ANGLE],
+            Float:bottom  = z + gCrateData[crateid][E_CRATE_BOTTOM]
         ;
 
-        if (A3D_IsModelColliding(gCrateData[crateid][E_CRATE_MODEL], x, y, gCrateData[crateid][E_CRATE_Z] + 0.03, 0.0, 0.0, gCrateData[crateid][E_CRATE_ANGLE], worldid, A3D_COLLIDE_MAP | A3D_COLLIDE_STATIC, interiorid)) {
+        if (A3D_IsModelColliding(
+            modelid,
+            x, y, z + 0.03,
+            .rz         = angle,
+            .worldid    = worldid,
+            .flags      = A3D_COLLIDE_MAP | A3D_COLLIDE_STATIC,
+            .interiorid = interiorid
+        )) {
             LowerCrateInternal(vehicleid, true);
         } else {
             new
@@ -773,23 +883,34 @@ static stock ResetForkliftInternal(vehicleid) {
                 hitid
             ;
 
+            new const bool:hit = A3D_RayCast(
+                x, y, bottom + 0.05,
+                x, y, bottom - 0.3,
+                hitX, hitY, hitZ, type, hitid,
+                .worldid    = worldid,
+                .flags      = A3D_COLLIDE_MAP | A3D_COLLIDE_STATIC,
+                .interiorid = interiorid
+            );
+
             new const
-                bool:hit = A3D_RayCast(x, y, bottom + 0.05, x, y, bottom - 0.3, hitX, hitY, hitZ, type, hitid, .worldid = worldid, .flags = A3D_COLLIDE_MAP | A3D_COLLIDE_STATIC, .interiorid = interiorid),
                 Crate:belowid = (hit && type == A3D_HIT_STATIC) ? GetPhysicCrateInternal(hitid) : INVALID_CRATE_ID
             ;
 
-            new const
-                Crate:aboveid = gCrateData[crateid][E_CRATE_ABOVE]
-            ;
-
             DestroyDynamicObject(gCrateData[crateid][E_CRATE_OBJECT]);
-            PlaceCrateInternal(crateid, x, y, bottom, gCrateData[crateid][E_CRATE_ANGLE], belowid);
+            PlaceCrateInternal(crateid, x, y, bottom, angle, belowid);
 
             gForkliftData[vehicleid][E_FORKLIFT_CRATE] = INVALID_CRATE_ID;
 
             if (aboveid != INVALID_CRATE_ID) {
+                new const
+                    Float:aboveX      = gCrateData[aboveid][E_CRATE_X],
+                    Float:aboveY      = gCrateData[aboveid][E_CRATE_Y],
+                    Float:aboveBottom = gCrateData[aboveid][E_CRATE_Z] + gCrateData[aboveid][E_CRATE_BOTTOM],
+                    Float:aboveAngle  = gCrateData[aboveid][E_CRATE_ANGLE]
+                ;
+
                 DestroyDynamicObject(gCrateData[aboveid][E_CRATE_OBJECT]);
-                PlaceCrateInternal(aboveid, gCrateData[aboveid][E_CRATE_X], gCrateData[aboveid][E_CRATE_Y], gCrateData[aboveid][E_CRATE_Z] + gCrateData[aboveid][E_CRATE_BOTTOM], gCrateData[aboveid][E_CRATE_ANGLE], crateid);
+                PlaceCrateInternal(aboveid, aboveX, aboveY, aboveBottom, aboveAngle, crateid);
             }
 
             call OnCrateReturned(crateid, vehicleid);
@@ -802,10 +923,10 @@ static stock ResetForkliftInternal(vehicleid) {
 
     Timer_Stop(gForkliftData[vehicleid][E_FORKLIFT_TIMER]);
 
-    gForkliftData[vehicleid][E_FORKLIFT_TIMER] = INVALID_TIMER_ID;
+    gForkliftData[vehicleid][E_FORKLIFT_TIMER]     = INVALID_TIMER_ID;
     gForkliftData[vehicleid][E_FORKLIFT_DIRECTION] = 0;
-    gForkliftData[vehicleid][E_FORKLIFT_POSITION] = 0.0;
-    gForkliftData[vehicleid][E_FORKLIFT_HEIGHT] = 0.0;
+    gForkliftData[vehicleid][E_FORKLIFT_POSITION]  = 0;
+    gForkliftData[vehicleid][E_FORKLIFT_HEIGHT]    = 0.0;
 }
 
 static stock TouchCratesInternal(vehicleid, bool:leaving) {
@@ -826,15 +947,40 @@ static stock TouchCratesInternal(vehicleid, bool:leaving) {
     A3D_GetVehicleOffsetPosition(vehicleid, 0.0, FORKLIFT_FORK_LENGTH * 0.5, 0.0, x, y, z);
 
     new const
-        now = GetTickCount(),
-        bool:still = !leaving && gForkliftData[vehicleid][E_FORKLIFT_DIRECTION] == 0 && VectorSize(x - gForkliftData[vehicleid][E_FORKLIFT_TOUCH_X], y - gForkliftData[vehicleid][E_FORKLIFT_TOUCH_Y], z - gForkliftData[vehicleid][E_FORKLIFT_TOUCH_Z]) < 0.05 && floatabs(angle - gForkliftData[vehicleid][E_FORKLIFT_TOUCH_ANGLE]) < 1.0,
-        count = still ? 0 : A3D_OverlapBox(sizeX + FORKLIFT_TOUCH_MARGIN * 2.0, sizeY + FORKLIFT_FORK_LENGTH + FORKLIFT_TOUCH_MARGIN * 2.0, sizeZ + FORKLIFT_TOUCH_MARGIN * 2.0, x, y, z, 0.0, 0.0, angle, types, hits, .worldid = GetVehicleVirtualWorld(vehicleid), .flags = A3D_COLLIDE_STATIC, .interiorid = GetVehicleInterior(vehicleid))
+        direction       = gForkliftData[vehicleid][E_FORKLIFT_DIRECTION],
+        Float:lastX     = gForkliftData[vehicleid][E_FORKLIFT_TOUCH_X],
+        Float:lastY     = gForkliftData[vehicleid][E_FORKLIFT_TOUCH_Y],
+        Float:lastZ     = gForkliftData[vehicleid][E_FORKLIFT_TOUCH_Z],
+        Float:lastAngle = gForkliftData[vehicleid][E_FORKLIFT_TOUCH_ANGLE]
     ;
 
-    gForkliftData[vehicleid][E_FORKLIFT_TOUCH_X] = x;
-    gForkliftData[vehicleid][E_FORKLIFT_TOUCH_Y] = y;
-    gForkliftData[vehicleid][E_FORKLIFT_TOUCH_Z] = z;
+    new const
+        now             = GetTickCount(),
+        Float:travelled = VectorSize(x - lastX, y - lastY, z - lastZ),
+        Float:turned    = floatabs(angle - lastAngle),
+        bool:still      = !leaving && direction == 0 && travelled < 0.05 && turned < 1.0
+    ;
+
+    gForkliftData[vehicleid][E_FORKLIFT_TOUCH_X]     = x;
+    gForkliftData[vehicleid][E_FORKLIFT_TOUCH_Y]     = y;
+    gForkliftData[vehicleid][E_FORKLIFT_TOUCH_Z]     = z;
     gForkliftData[vehicleid][E_FORKLIFT_TOUCH_ANGLE] = angle;
+
+    new const
+        Float:boxX = sizeX + FORKLIFT_TOUCH_MARGIN * 2.0,
+        Float:boxY = sizeY + FORKLIFT_FORK_LENGTH + FORKLIFT_TOUCH_MARGIN * 2.0,
+        Float:boxZ = sizeZ + FORKLIFT_TOUCH_MARGIN * 2.0
+    ;
+
+    new const count = still ? 0 : A3D_OverlapBox(
+        boxX, boxY, boxZ,
+        x, y, z,
+        0.0, 0.0, angle,
+        types, hits,
+        .worldid    = GetVehicleVirtualWorld(vehicleid),
+        .flags      = A3D_COLLIDE_STATIC,
+        .interiorid = GetVehicleInterior(vehicleid)
+    );
 
     for (new i; i != count; ++i) {
         new const
@@ -909,13 +1055,13 @@ static stock Crate:AllocCrateInternal(modelid, worldid, interiorid) {
         return INVALID_CRATE_ID;
     }
 
-    gCrateData[crateid][E_CRATE_MODEL] = modelid;
-    gCrateData[crateid][E_CRATE_WORLD] = worldid;
+    gCrateData[crateid][E_CRATE_MODEL]    = modelid;
+    gCrateData[crateid][E_CRATE_WORLD]    = worldid;
     gCrateData[crateid][E_CRATE_INTERIOR] = interiorid;
-    gCrateData[crateid][E_CRATE_BOTTOM] = minZ;
-    gCrateData[crateid][E_CRATE_TOP] = maxZ;
-    gCrateData[crateid][E_CRATE_WIDTH] = (maxX - minX) * 0.5;
-    gCrateData[crateid][E_CRATE_DEPTH] = (maxY - minY) * 0.5;
+    gCrateData[crateid][E_CRATE_BOTTOM]   = minZ;
+    gCrateData[crateid][E_CRATE_TOP]      = maxZ;
+    gCrateData[crateid][E_CRATE_WIDTH]    = (maxX - minX) * 0.5;
+    gCrateData[crateid][E_CRATE_DEPTH]    = (maxY - minY) * 0.5;
     gCrateData[crateid][E_CRATE_CENTER_X] = (minX + maxX) * 0.5;
     gCrateData[crateid][E_CRATE_CENTER_Y] = (minY + maxY) * 0.5;
 
@@ -950,14 +1096,23 @@ stock Crate:StackCrate(Crate:belowid, modelid) {
     }
 
     new const
-        Crate:crateid = AllocCrateInternal(modelid, gCrateData[belowid][E_CRATE_WORLD], gCrateData[belowid][E_CRATE_INTERIOR])
+        worldid     = gCrateData[belowid][E_CRATE_WORLD],
+        interiorid  = gCrateData[belowid][E_CRATE_INTERIOR],
+        Float:x     = gCrateData[belowid][E_CRATE_X],
+        Float:y     = gCrateData[belowid][E_CRATE_Y],
+        Float:top   = gCrateData[belowid][E_CRATE_Z] + gCrateData[belowid][E_CRATE_TOP],
+        Float:angle = gCrateData[belowid][E_CRATE_ANGLE]
+    ;
+
+    new const
+        Crate:crateid = AllocCrateInternal(modelid, worldid, interiorid)
     ;
 
     if (crateid == INVALID_CRATE_ID) {
         return INVALID_CRATE_ID;
     }
 
-    PlaceCrateInternal(crateid, gCrateData[belowid][E_CRATE_X], gCrateData[belowid][E_CRATE_Y], gCrateData[belowid][E_CRATE_Z] + gCrateData[belowid][E_CRATE_TOP], gCrateData[belowid][E_CRATE_ANGLE], belowid);
+    PlaceCrateInternal(crateid, x, y, top, angle, belowid);
 
     return crateid;
 }
@@ -968,7 +1123,7 @@ stock bool:DestroyCrate(Crate:crateid) {
     }
 
     new const
-        vehicleid = gCrateData[crateid][E_CRATE_VEHICLE],
+        vehicleid     = gCrateData[crateid][E_CRATE_VEHICLE],
         Crate:belowid = gCrateData[crateid][E_CRATE_BELOW],
         Crate:aboveid = gCrateData[crateid][E_CRATE_ABOVE]
     ;
@@ -1085,9 +1240,9 @@ hook OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys) {
     }
 
     new const
-        bool:up = (newkeys & KEY_ANALOG_UP) != KEY_NONE,
+        bool:up   = (newkeys & KEY_ANALOG_UP) != KEY_NONE,
         bool:down = (newkeys & KEY_ANALOG_DOWN) != KEY_NONE,
-        direction = (up == down) ? 0 : (up ? 1 : -1)
+        direction = _:up - _:down
     ;
 
     if (direction == gForkliftData[vehicleid][E_FORKLIFT_DIRECTION]) {
